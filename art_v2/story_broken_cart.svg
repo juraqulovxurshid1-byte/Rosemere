@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 80" width="120" height="80">
+  <rect width="120" height="80" fill="transparent"/>
+  <g stroke="#1a1a1a" stroke-width="2.5" fill="none">
+    <!-- Wheel -->
+    <circle cx="35" cy="55" r="18" fill="#3a2a1a" stroke="#1a1a1a"/>
+    <line x1="35" y1="37" x2="35" y2="73" stroke="#1a1a1a" stroke-width="1.5"/>
+    <line x1="17" y1="55" x2="53" y2="55" stroke="#1a1a1a" stroke-width="1.5"/>
+    <line x1="22" y1="42" x2="48" y2="68" stroke="#1a1a1a" stroke-width="1.5"/>
+    <line x1="48" y1="42" x2="22" y2="68" stroke="#1a1a1a" stroke-width="1.5"/>
+    <!-- Cart body -->
+    <rect x="40" y="25" width="60" height="25" rx="3" fill="#4a3520" stroke="#1a1a1a"/>
+    <!-- Broken axle -->
+    <line x1="40" y1="55" x2="25" y2="65" stroke="#1a1a1a" stroke-width="3"/>
+    <!-- Debris -->
+    <line x1="85" y1="30" x2="95" y2="25" stroke="#4a3520" stroke-width="3"/>
+    <rect x="80" y="50" width="8" height="6" fill="#3a2a1a" stroke="#1a1a1a" stroke-width="1"/>
+    <rect x="55" y="55" width="5" height="4" fill="#3a2a1a" stroke="#1a1a1a" stroke-width="1"/>
+  </g>
+</svg>

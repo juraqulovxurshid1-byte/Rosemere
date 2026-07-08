@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 240" width="120" height="240">
+  <rect width="120" height="240" fill="transparent"/>
+  <g stroke="#1a1a1a" stroke-width="2.5" fill="none">
+    <!-- Head -->
+    <circle cx="60" cy="35" r="18" fill="#d4a882" stroke="#1a1a1a"/>
+    <!-- Hair/headscarf -->
+    <path d="M42,35 Q42,12 60,10 Q78,12 78,35" fill="#4a5a3a" stroke="#1a1a1a"/>
+    <path d="M42,35 L42,55 Q60,60 78,55 L78,35" fill="#4a5a3a" stroke="#1a1a1a"/>
+    <path d="M40,30 L38,28" stroke-width="2"/>
+    <path d="M80,30 L82,28" stroke-width="2"/>
+    <!-- Eyes -->
+    <circle cx="52" cy="33" r="2" fill="#222"/>
+    <circle cx="68" cy="33" r="2" fill="#222"/>
+    <!-- Mouth -->
+    <path d="M55,42 Q60,45 65,42" stroke-width="1.5"/>
+    <!-- Body / Dress -->
+    <path d="M45,52 L42,150 Q60,160 78,150 L75,52" fill="#3a6a4a" stroke="#1a1a1a"/>
+    <!-- Apron -->
+    <path d="M50,70 L50,140 Q60,145 70,140 L70,70" fill="#5a4a3a" stroke="#1a1a1a" stroke-width="1.5"/>
+    <!-- Arms -->
+    <path d="M42,55 L28,90 L25,100" fill="#d4a882" stroke="#1a1a1a"/>
+    <path d="M78,55 L92,90 L95,100" fill="#d4a882" stroke="#1a1a1a"/>
+    <!-- Basket -->
+    <path d="M88,85 Q95,82 102,85 L100,105 Q95,108 90,105 Z" fill="#6a5a3a" stroke="#1a1a1a"/>
+    <!-- Basket weave -->
+    <line x1="89" y1="90" x2="101" y2="90" stroke="#5a4a2a" stroke-width="1"/>
+    <line x1="89" y1="95" x2="101" y2="95" stroke="#5a4a2a" stroke-width="1"/>
+    <line x1="89" y1="100" x2="101" y2="100" stroke="#5a4a2a" stroke-width="1"/>
+    <!-- Basket handle -->
+    <path d="M88,85 Q95,70 102,85" fill="none" stroke="#6a5a3a" stroke-width="2"/>
+    <!-- Skirt lines -->
+    <line x1="48" y1="120" x2="48" y2="145" stroke="#2a5a3a" stroke-width="1"/>
+    <line x1="72" y1="120" x2="72" y2="145" stroke="#2a5a3a" stroke-width="1"/>
+    <!-- Feet -->
+    <ellipse cx="50" cy="152" rx="8" ry="4" fill="#4a3a2a" stroke="#1a1a1a"/>
+    <ellipse cx="70" cy="152" rx="8" ry="4" fill="#4a3a2a" stroke="#1a1a1a"/>
+  </g>
+</svg>

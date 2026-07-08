@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 200" width="120" height="200">
+  <rect width="120" height="200" fill="transparent"/>
+  <g stroke="#1a1a1a" stroke-width="2.5">
+    <!-- Post -->
+    <rect x="54" y="80" width="12" height="120" fill="#3a2a1a" stroke="#1a1a1a"/>
+    <!-- Left sign -->
+    <rect x="5" y="60" width="55" height="30" rx="3" fill="#4a3520" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="32" y="79" text-anchor="middle" fill="#ccc" font-size="10" font-family="serif">ROSEMERE</text>
+    <!-- Right sign -->
+    <rect x="60" y="60" width="55" height="30" rx="3" fill="#4a3520" stroke="#1a1a1a" stroke-width="2.5"/>
+    <text x="87" y="79" text-anchor="middle" fill="#ccc" font-size="10" font-family="serif">NORTH RD</text>
+    <!-- Post top ornament -->
+    <circle cx="60" cy="55" r="6" fill="#3a2a1a" stroke="#1a1a1a"/>
+    <!-- Iron bracket left -->
+    <path d="M54,70 L5,70" fill="none" stroke="#444" stroke-width="3"/>
+    <!-- Iron bracket right -->
+    <path d="M66,70 L115,70" fill="none" stroke="#444" stroke-width="3"/>
+  </g>
+</svg>

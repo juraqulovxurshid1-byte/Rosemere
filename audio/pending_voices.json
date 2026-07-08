@@ -1,0 +1,23 @@
+{
+  "pending_voices": [],
+  "generated_voices": {
+    "gareth": [
+      {"text": "Forge's busy. What d'ye want?", "file": "voice_gareth_greeting.mp3"},
+      {"text": "Silver sword. Good steel. 30 coins.", "file": "voice_gareth_sword.mp3"},
+      {"text": "Battleaxe. Heavy. 60 coins. Worth it.", "file": "voice_gareth_axe.mp3"},
+      {"text": "Ye cleared the road. Here's yer bounty. Well done.", "file": "voice_gareth_reward.mp3"},
+      {"text": "No coin. No sword. Simple.", "file": "voice_gareth_no_coin.mp3"},
+      {"text": "Axe costs 60. Hunt first.", "file": "voice_gareth_hunt_first.mp3"}
+    ],
+    "elora": [
+      {"text": "Shelter or elixir?", "file": "voice_elora_greeting.mp3"},
+      {"text": "Fresh face! Rest or trade?", "file": "voice_elora_welcome.mp3"},
+      {"text": "Healing elixir. 20 coins. Drink now.", "file": "voice_elora_potion.mp3"}
+    ]
+  },
+  "voice_settings": {
+    "gareth": {"language": "en-GB", "gender": "masculine", "use_case": "conversational", "index": 0},
+    "elora": {"language": "en-GB", "gender": "feminine", "use_case": "characters", "index": 1}
+  },
+  "note": "Player has NO voice - only text. Gareth is gruff/short. Elora is quick/short."
+}

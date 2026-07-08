@@ -1,0 +1,44 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/villager_ai.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://art_v2/villager_male.png" id="2_sprite"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
+radius = 0.35
+height = 1.6
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_interact"]
+radius = 3.5
+
+[node name="Villager" type="CharacterBody3D"]
+script = ExtResource("1_script")
+villager_name = "Peasant"
+move_speed = 2.0
+wander_radius = 8.0
+pause_min = 2.0
+pause_max = 5.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+shape = SubResource("CapsuleShape3D_body")
+
+[node name="Sprite3D" type="Sprite3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+billboard = 2
+texture_filter = 0
+texture = ExtResource("2_sprite")
+
+[node name="Nameplate" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.0, 0)
+billboard = 1
+modulate = Color(0.9, 0.95, 1.0, 1)
+text = "🧑 Villager"
+font_size = 32
+outline_size = 8
+
+[node name="InteractArea" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+monitoring = true
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="InteractArea"]
+shape = SubResource("SphereShape3D_interact")

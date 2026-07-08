@@ -1,0 +1,812 @@
+[gd_scene load_steps=69 format=3]
+[ext_resource type="PackedScene" path="res://scenes/Player.tscn" id="1_player"]
+[ext_resource type="Script" path="res://scripts/groq_npc_ai.gd" id="2_groq"]
+[ext_resource type="Texture2D" path="res://art_v2/blacksmith.png" id="3_blacksmith"]
+[ext_resource type="PackedScene" path="res://scenes/DialogueUI.tscn" id="4_dialogue"]
+[ext_resource type="PackedScene" path="res://scenes/BanditEnemy.tscn" id="5_bandit"]
+[ext_resource type="PackedScene" path="res://scenes/HUD.tscn" id="6_hud"]
+[ext_resource type="Script" path="res://scripts/day_night_cycle.gd" id="7_daynight"]
+[ext_resource type="Script" path="res://scripts/campfire.gd" id="8_campfire"]
+[ext_resource type="PackedScene" path="res://scenes/TreasureChest.tscn" id="9_chest"]
+[ext_resource type="PackedScene" path="res://scenes/BossTroll.tscn" id="10_boss"]
+[ext_resource type="Texture2D" path="res://art_v2/grimdark_tree.svg" id="11_tree"]
+[ext_resource type="Texture2D" path="res://icon.svg" id="12_icon"]
+[ext_resource type="Texture2D" path="res://art_v2/innkeeper.png" id="13_innkeeper"]
+[ext_resource type="Texture2D" path="res://art_v2/grimdark_tavern.png" id="14_tavern"]
+[ext_resource type="PackedScene" path="res://scenes/SoundManager.tscn" id="15_sound"]
+[ext_resource type="Script" path="res://scripts/groq_config.gd" id="16_groqcfg"]
+[ext_resource type="PackedScene" path="res://scenes/Villager.tscn" id="17_villager"]
+[ext_resource type="Texture2D" path="res://art_v2/merchant.png" id="19_merchant"]
+[ext_resource type="Script" path="res://scripts/outline_applier.gd" id="21_outline"]
+[ext_resource type="Script" path="res://scripts/shadow_manager.gd" id="31_shadow"]
+[ext_resource type="Texture2D" path="res://art_v2/grimdark_tavern.png" id="22_grimtavern"]
+[ext_resource type="Texture2D" path="res://art_v2/grimdark_house.png" id="23_grimhouse1"]
+[ext_resource type="Texture2D" path="res://art_v2/grimdark_house.png" id="24_grimhouse2"]
+[ext_resource type="Texture2D" path="res://art_v2/grimdark_church.png" id="25_grimchurch"]
+[ext_resource type="Texture2D" path="res://art_v2/grimdark_castle_bg.png" id="26_grimcastle"]
+[ext_resource type="Texture2D" path="res://art_v2/grimdark_torch.svg" id="27_grimtorch"]
+[ext_resource type="Texture2D" path="res://art_v2/grimdark_barrel.svg" id="28_grimbarrel"]
+[ext_resource type="Texture2D" path="res://art_v2/grimdark_signpost.svg" id="29_grimsign"]
+[ext_resource type="Texture2D" path="res://art_v2/cobblestone_ground.png" id="30_cobbletex"]
+[ext_resource type="Material" path="res://materials/cobblestone_ground_mat.tres" id="30_cobblemat"]
+[ext_resource type="Texture2D" path="res://art_v2/ground_patch_dark.svg" id="40_gpatchdark"]
+[ext_resource type="Texture2D" path="res://art_v2/ground_patch_mud.svg" id="41_gpatchmud"]
+[ext_resource type="Texture2D" path="res://art_v2/ground_tuft_grass.svg" id="42_ggrass"]
+[ext_resource type="Texture2D" path="res://art_v2/ground_crack.svg" id="43_gcrack"]
+[ext_resource type="Texture2D" path="res://art_v2/deco_fence.svg" id="44_dfence"]
+[ext_resource type="Texture2D" path="res://art_v2/deco_rock.svg" id="45_drock"]
+[ext_resource type="Texture2D" path="res://art_v2/deco_bush.svg" id="46_dbush"]
+[ext_resource type="Texture2D" path="res://art_v2/deco_dead_tree.svg" id="47_dtree"]
+[ext_resource type="Texture2D" path="res://art_v2/story_broken_cart.svg" id="48_cart"]
+[ext_resource type="Texture2D" path="res://art_v2/story_weapon_rack.svg" id="49_wrack"]
+[ext_resource type="Texture2D" path="res://art_v2/story_stockade.svg" id="50_stock"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_world"]
+sky_top_color = Color(0.45, 0.48, 0.55, 1)
+sky_horizon_color = Color(0.6, 0.58, 0.55, 1)
+sky_energy = 1.0
+sky_cover = 0.5
+sky_cover_modulator = Color(0.4, 0.42, 0.48, 1)
+ground_bottom_color = Color(0.35, 0.33, 0.35, 1)
+ground_horizon_color = Color(0.45, 0.43, 0.4, 1)
+
+[sub_resource type="Sky" id="Sky_world"]
+sky_material = SubResource("ProceduralSkyMaterial_world")
+
+[sub_resource type="Environment" id="Environment_world"]
+background_mode = 2
+sky = SubResource("Sky_world")
+tonemap_mode = 3
+tonemap_exposure = 1.0
+ambient_light_color = Color(0.5, 0.55, 0.65, 1)
+ambient_light_energy = 1.0
+ambient_light_sky_contribution = 0.7
+glow_enabled = false
+fog_enabled = false
+fog_light_color = Color(0.35, 0.38, 0.5, 1)
+fog_density = 0.004
+fog_height = 5.0
+fog_height_density = 0.8
+fog_sun_scatter = 0.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_floor"]
+size = Vector3(120, 1, 120)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_floor"]
+size = Vector3(120, 1, 120)
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_npc"]
+radius = 0.8
+height = 2.0
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_heal"]
+radius = 4.5
+
+[node name="RosemereWorld" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_world")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, 0.75, -0.433013, 0, 12, 0)
+light_color = Color(0.75, 0.8, 0.9, 1)
+light_energy = 0.8
+shadow_enabled = true
+shadow_opacity = 0.8
+script = ExtResource("7_daynight")
+# Subtle rim-light from opposite angle to define edges
+
+[node name="RimLight" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.3, 0.433013, 0.85, 0, 0.5, -0.866025, -0.95, 0.75, -0.5, 0, 12, 0)
+light_color = Color(0.6, 0.65, 0.8, 1)
+light_energy = 0.6
+shadow_enabled = false
+light_indirect_energy = 0.3
+
+[node name="SoundManager" parent="." instance=ExtResource("15_sound")]
+
+[node name="HUD" parent="." instance=ExtResource("6_hud")]
+
+[node name="DialogueUI" parent="." instance=ExtResource("4_dialogue")]
+
+[node name="GroqConfig" type="Node" parent="."]
+script = ExtResource("16_groqcfg")
+groq_api_key = "YOUR_GROQ_API_KEY_HERE"
+model_name = "llama-3.3-70b-versatile"
+
+[node name="OutlineApplier" type="Node" parent="."]
+script = ExtResource("21_outline")
+outline_width = 3.5
+outline_color = Color(0, 0, 0, 1)
+
+[node name="ShadowManager" type="Node" parent="."]
+script = ExtResource("31_shadow")
+shadow_opacity = 0.3
+shadow_softness = 1.0
+shadow_scale_factor = 0.8
+# --- BACKGROUND CASTLE SILHOUETTE ---
+
+[node name="BackgroundCastle" type="Sprite3D" parent="."]
+transform = Transform3D(8.0, 0, 0, 0, 8.0, 0, 0, 0, 1, 0, 0, -55)
+billboard = 2
+texture_filter = 0
+modulate = Color(1, 1, 1, 0.7)
+texture = ExtResource("26_grimcastle")
+
+[node name="BackgroundCastle2" type="Sprite3D" parent="."]
+transform = Transform3D(6.0, 0, 0, 0, 6.0, 0, 0, 0, 1, -20, 0, -50)
+billboard = 2
+texture_filter = 0
+modulate = Color(1, 1, 1, 0.55)
+texture = ExtResource("26_grimcastle")
+
+[node name="Ground" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+
+[node name="CobblestoneGround" type="MeshInstance3D" parent="Ground"]
+material_override = ExtResource("30_cobblemat")
+mesh = SubResource("BoxMesh_floor")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
+shape = SubResource("BoxShape3D_floor")
+# --- GRIMDARK BUILDINGS ---
+
+[node name="GrimTavern" type="Sprite3D" parent="."]
+transform = Transform3D(3.5, 0, 0, 0, 3.5, 0, 0, 0, 1, 7.5, 0, 0)
+billboard = 2
+texture_filter = 0
+texture = ExtResource("22_grimtavern")
+
+[node name="GrimHouse1" type="Sprite3D" parent="."]
+transform = Transform3D(3.0, 0, 0, 0, 3.0, 0, 0, 0, 1, -9, 0, -4)
+billboard = 2
+texture_filter = 0
+texture = ExtResource("23_grimhouse1")
+
+[node name="GrimHouse2" type="Sprite3D" parent="."]
+transform = Transform3D(3.0, 0, 0, 0, 3.0, 0, 0, 0, 1, 10, 0, 3)
+billboard = 2
+texture_filter = 0
+texture = ExtResource("24_grimhouse2")
+
+[node name="GrimHouse3" type="Sprite3D" parent="."]
+transform = Transform3D(3.0, 0, 0, 0, 3.0, 0, 0, 0, 1, 9, 0, 10)
+billboard = 2
+texture_filter = 0
+texture = ExtResource("23_grimhouse1")
+
+[node name="GrimHouse4" type="Sprite3D" parent="."]
+transform = Transform3D(3.2, 0, 0, 0, 3.2, 0, 0, 0, 1, 12, 0, -5)
+billboard = 2
+texture_filter = 0
+texture = ExtResource("24_grimhouse2")
+
+[node name="GrimHouse5" type="Sprite3D" parent="."]
+transform = Transform3D(3.0, 0, 0, 0, 3.0, 0, 0, 0, 1, -12, 0, 8)
+billboard = 2
+texture_filter = 0
+texture = ExtResource("23_grimhouse1")
+
+[node name="GrimChurch" type="Sprite3D" parent="."]
+transform = Transform3D(3.0, 0, 0, 0, 4.5, 0, 0, 0, 1, -8, 0, 3)
+billboard = 2
+texture_filter = 0
+texture = ExtResource("25_grimchurch")
+# --- PROPS ---
+
+[node name="Props" type="Node3D" parent="."]
+
+[node name="Torch1" type="Sprite3D" parent="Props"]
+transform = Transform3D(0.6, 0, 0, 0, 0.8, 0, 0, 0, 1, -2, 0, 0.5)
+billboard = 2
+texture_filter = 0
+texture = ExtResource("27_grimtorch")
+
+[node name="Torch2" type="Sprite3D" parent="Props"]
+transform = Transform3D(0.6, 0, 0, 0, 0.8, 0, 0, 0, 1, 2, 0, -0.5)
+billboard = 2
+texture_filter = 0
+texture = ExtResource("27_grimtorch")
+
+[node name="Torch3" type="Sprite3D" parent="Props"]
+transform = Transform3D(0.6, 0, 0, 0, 0.8, 0, 0, 0, 1, -3, 0, 3)
+billboard = 2
+texture_filter = 0
+texture = ExtResource("27_grimtorch")
+
+[node name="Barrel1" type="Sprite3D" parent="Props"]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 1, 0, 0, 3)
+billboard = 2
+texture_filter = 0
+texture = ExtResource("28_grimbarrel")
+
+[node name="Barrel2" type="Sprite3D" parent="Props"]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 1, 5, 0, 2)
+billboard = 2
+texture_filter = 0
+texture = ExtResource("28_grimbarrel")
+
+[node name="Signpost" type="Sprite3D" parent="Props"]
+transform = Transform3D(1.0, 0, 0, 0, 1.2, 0, 0, 0, 1, 0, 0, -1)
+billboard = 2
+texture_filter = 0
+texture = ExtResource("29_grimsign")
+# --- GROUND DETAILS (dirt patches, cracks, grass tufts) ---
+
+[node name="GroundDetails" type="Node3D" parent="."]
+# --- WARM ACCENT LIGHTS (torches, windows) ---
+
+[node name="TorchGlow1" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 2.0, 0.5)
+light_color = Color(1.0, 0.65, 0.2, 1)
+light_energy = 2.0
+light_indirect_energy = 1.2
+omni_range = 5.5
+shadow_enabled = false
+
+[node name="TorchGlow2" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 2.0, -0.5)
+light_color = Color(1.0, 0.65, 0.2, 1)
+light_energy = 2.0
+light_indirect_energy = 1.2
+omni_range = 5.5
+shadow_enabled = false
+
+[node name="TorchGlow3" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 1.8, 3)
+light_color = Color(1.0, 0.6, 0.25, 1)
+light_energy = 1.5
+light_indirect_energy = 0.8
+omni_range = 5.0
+shadow_enabled = false
+
+[node name="TavernWarmGlow" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, 3.0, 0)
+light_color = Color(1.0, 0.8, 0.35, 1)
+light_energy = 2.5
+light_indirect_energy = 1.5
+omni_range = 8.0
+shadow_enabled = false
+
+[node name="HouseGlow1" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 2.5, -4)
+light_color = Color(1.0, 0.75, 0.3, 1)
+light_energy = 1.2
+light_indirect_energy = 0.6
+omni_range = 5.5
+shadow_enabled = false
+
+[node name="HouseGlow2" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 2.5, 3)
+light_color = Color(1.0, 0.75, 0.3, 1)
+light_energy = 1.2
+light_indirect_energy = 0.6
+omni_range = 5.5
+shadow_enabled = false
+
+[node name="Player" parent="." instance=ExtResource("1_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 5)
+
+[node name="BlacksmithNPC" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0, 1)
+script = ExtResource("2_groq")
+npc_name = "Gareth the Blacksmith"
+npc_persona = "You are Gareth, an intense, deep-voiced Viking warrior blacksmith of Rosemere village. You are serious, fierce, and value battle strength above all else. You craft heavy dwarven battleaxes and Witcher steel. Speak succinctly like a hardened Norse chieftain."
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BlacksmithNPC"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+shape = SubResource("CapsuleShape3D_npc")
+
+[node name="Sprite3D" type="Sprite3D" parent="BlacksmithNPC"]
+billboard = 2
+texture_filter = 0
+texture = ExtResource("3_blacksmith")
+
+[node name="Nameplate" type="Label3D" parent="BlacksmithNPC"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.3, 0)
+billboard = 1
+modulate = Color(1, 0.85, 0.3, 1)
+text = "⚔️ Gareth the Blacksmith ⚔️\n[Press E to Talk]"
+font_size = 40
+outline_size = 12
+
+[node name="InnkeeperNPC" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, 0, 0)
+script = ExtResource("2_groq")
+npc_name = "Elora the Innkeeper"
+npc_persona = "You are Elora, a mysterious, fast-talking witch who disguises herself as the tavern innkeeper of Rosemere. You brew mystical health elixirs and speak in quick, cryptic, enchanting riddles about the fate of the realm and Grok the Troll."
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="InnkeeperNPC"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+shape = SubResource("CapsuleShape3D_npc")
+
+[node name="Sprite3D" type="Sprite3D" parent="InnkeeperNPC"]
+billboard = 2
+texture_filter = 0
+texture = ExtResource("13_innkeeper")
+
+[node name="Nameplate" type="Label3D" parent="InnkeeperNPC"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.3, 0)
+billboard = 1
+modulate = Color(0.4, 1, 0.5, 1)
+text = "🍺 Elora the Innkeeper 🍺\n[Press E to Talk]"
+font_size = 40
+outline_size = 12
+
+[node name="Villagers" type="Node3D" parent="."]
+
+[node name="OldManThomas" parent="Villagers" instance=ExtResource("17_villager")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, 0)
+villager_name = "Old Man Thomas"
+wander_radius = 6.0
+move_speed = 1.5
+pause_min = 3.0
+pause_max = 7.0
+dialogue_lines = [
+	"Ah, another warrior through Rosemere. Watch the north road.",
+	"The forge keeps our village alive. Gareth's our best.",
+	"Bandits grow bolder every season...",
+	"Stay away from the troll caves, lad.",
+	"I remember when Rosemere was just a hamlet."
+]
+
+[node name="Martha" parent="Villagers" instance=ExtResource("17_villager")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, 6)
+villager_name = "Martha"
+wander_radius = 5.0
+move_speed = 1.8
+pause_min = 2.0
+pause_max = 6.0
+dialogue_lines = [
+	"Hello there, traveler! Stay for a meal?",
+	"If you need supplies, Elora's your woman.",
+	"The church hasn't had a priest in years...",
+	"Have you seen my cat? He wanders off.",
+	"Those bandits stole my chickens last week!"
+]
+
+[node name="MerchantLeo" parent="Villagers" instance=ExtResource("17_villager")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 4)
+villager_name = "Merchant Leo"
+wander_radius = 7.0
+move_speed = 2.2
+pause_min = 1.5
+pause_max = 4.0
+dialogue_lines = [
+	"Trade's been slow since the road got dangerous.",
+	"Silver swords from Gareth are top quality.",
+	"I heard Grok the Troll crushed a caravan last moon.",
+	"Got some fine cloth, if you're interested.",
+	"The inn's ale is the best south of the river."
+]
+
+[node name="YoungWill" parent="Villagers" instance=ExtResource("17_villager")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 0, 10)
+villager_name = "Young Will"
+wander_radius = 8.0
+move_speed = 2.5
+pause_min = 1.0
+pause_max = 3.0
+dialogue_lines = [
+	"I'm gonna be a Witcher one day! Just you wait!",
+	"Did you really fight those bandits? So cool!",
+	"My pa says the troll's as big as a house!",
+	"I found a rusty dagger near the old road...",
+	"Can you teach me to fight? Please?"
+]
+
+[node name="Campfire" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1)
+script = ExtResource("8_campfire")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="Campfire"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
+light_color = Color(1.0, 0.55, 0.15, 1)
+light_energy = 4.0
+light_indirect_energy = 2.0
+shadow_enabled = true
+omni_range = 14.0
+
+[node name="FireSprite" type="Sprite3D" parent="Campfire"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+billboard = 2
+texture_filter = 0
+texture = ExtResource("12_icon")
+modulate = Color(1, 0.35, 0.05, 1)
+
+[node name="HealArea" type="Area3D" parent="Campfire"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+monitoring = true
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Campfire/HealArea"]
+shape = SubResource("SphereShape3D_heal")
+
+[node name="TreasureChests" type="Node3D" parent="."]
+
+[node name="StarterChest" parent="TreasureChests" instance=ExtResource("9_chest")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0, 3)
+chest_name = "Village Starter Chest"
+gold_reward = 50
+
+[node name="TreasureChest1" parent="TreasureChests" instance=ExtResource("9_chest")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, -8)
+chest_name = "Witcher Cache"
+
+[node name="TreasureChest2" parent="TreasureChests" instance=ExtResource("9_chest")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, -10)
+chest_name = "Dwarven Strongbox"
+gold_reward = 40
+
+[node name="Enemies" type="Node3D" parent="."]
+
+[node name="BanditEnemy1" parent="Enemies" instance=ExtResource("5_bandit")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, -18)
+enemy_name = "North Road Bandit"
+
+[node name="BanditEnemy2" parent="Enemies" instance=ExtResource("5_bandit")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, -25)
+enemy_name = "Bandit Marauder"
+
+[node name="BanditEnemy3" parent="Enemies" instance=ExtResource("5_bandit")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, -30)
+enemy_name = "North Road Cutthroat"
+
+[node name="BanditEnemy4" parent="Enemies" instance=ExtResource("5_bandit")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, -38)
+enemy_name = "Bandit Marauder"
+
+[node name="BossTroll" parent="Enemies" instance=ExtResource("10_boss")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -50)
+
+[node name="Trees" type="Node3D" parent="."]
+
+[node name="Tree1" type="Sprite3D" parent="Trees"]
+transform = Transform3D(2, 0, 0, 0, 2.8, 0, 0, 0, 1, -12, 0, -8)
+billboard = 2
+texture_filter = 0
+modulate = Color(1, 1, 1, 0.85)
+texture = ExtResource("11_tree")
+
+[node name="Tree2" type="Sprite3D" parent="Trees"]
+transform = Transform3D(2.2, 0, 0, 0, 3, 0, 0, 0, 1, 14, 0, -12)
+billboard = 2
+texture_filter = 0
+modulate = Color(1, 1, 1, 0.85)
+texture = ExtResource("11_tree")
+
+[node name="Tree3" type="Sprite3D" parent="Trees"]
+transform = Transform3D(1.8, 0, 0, 0, 2.5, 0, 0, 0, 1, 8, 0, 10)
+billboard = 2
+texture_filter = 0
+modulate = Color(1, 1, 1, 0.8)
+texture = ExtResource("11_tree")
+
+[node name="Tree4" type="Sprite3D" parent="Trees"]
+transform = Transform3D(2.0, 0, 0, 0, 2.8, 0, 0, 0, 1, -14, 0, 12)
+billboard = 2
+texture_filter = 0
+modulate = Color(1, 1, 1, 0.85)
+texture = ExtResource("11_tree")
+
+[node name="Tree5" type="Sprite3D" parent="Trees"]
+transform = Transform3D(2.2, 0, 0, 0, 3.0, 0, 0, 0, 1, 15, 0, 8)
+billboard = 2
+texture_filter = 0
+modulate = Color(1, 1, 1, 0.8)
+texture = ExtResource("11_tree")
+
+[node name="Tree6" type="Sprite3D" parent="Trees"]
+transform = Transform3D(1.8, 0, 0, 0, 2.5, 0, 0, 0, 1, -13, 0, -12)
+billboard = 2
+texture_filter = 0
+modulate = Color(1, 1, 1, 0.85)
+texture = ExtResource("11_tree")
+
+[node name="Tree7" type="Sprite3D" parent="Trees"]
+transform = Transform3D(2.0, 0, 0, 0, 2.8, 0, 0, 0, 1, 16, 0, -5)
+billboard = 2
+texture_filter = 0
+modulate = Color(1, 1, 1, 0.8)
+texture = ExtResource("11_tree")
+
+[node name="Tree8" type="Sprite3D" parent="Trees"]
+transform = Transform3D(1.6, 0, 0, 0, 2.2, 0, 0, 0, 1, -11, 0, 3)
+billboard = 2
+texture_filter = 0
+modulate = Color(1, 1, 1, 0.7)
+texture = ExtResource("11_tree")
+
+[node name="DarkPatch1" type="Sprite3D" parent="GroundDetails"]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 1, -4, 0.03, 0)
+billboard = 3
+texture_filter = 0
+texture = ExtResource("40_gpatchdark")
+
+[node name="DarkPatch2" type="Sprite3D" parent="GroundDetails"]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1, 5, 0.03, 2)
+billboard = 3
+texture_filter = 0
+texture = ExtResource("40_gpatchdark")
+
+[node name="MudPatch1" type="Sprite3D" parent="GroundDetails"]
+transform = Transform3D(1.8, 0, 0, 0, 1.8, 0, 0, 0, 1, -10, 0.03, 6)
+billboard = 3
+texture_filter = 0
+texture = ExtResource("41_gpatchmud")
+
+[node name="MudPatch2" type="Sprite3D" parent="GroundDetails"]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1, 11, 0.03, 2)
+billboard = 3
+texture_filter = 0
+texture = ExtResource("41_gpatchmud")
+
+[node name="Crack1" type="Sprite3D" parent="GroundDetails"]
+transform = Transform3D(1.2, 0, 0, 0, 1.2, 0, 0, 0, 1, -1, 0.03, 1)
+billboard = 3
+texture_filter = 0
+texture = ExtResource("43_gcrack")
+
+[node name="Crack2" type="Sprite3D" parent="GroundDetails"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0.03, -1)
+billboard = 3
+texture_filter = 0
+texture = ExtResource("43_gcrack")
+
+[node name="Grass1" type="Sprite3D" parent="GroundDetails"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.03, 2)
+billboard = 3
+texture_filter = 0
+texture = ExtResource("42_ggrass")
+
+[node name="Grass2" type="Sprite3D" parent="GroundDetails"]
+transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 1, 7, 0.03, 5)
+billboard = 3
+texture_filter = 0
+texture = ExtResource("42_ggrass")
+
+[node name="Grass3" type="Sprite3D" parent="GroundDetails"]
+transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 1, -3, 0.03, -3)
+billboard = 3
+texture_filter = 0
+texture = ExtResource("42_ggrass")
+
+[node name="DarkPatch3" type="Sprite3D" parent="GroundDetails"]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1, 11, 0.03, 2)
+billboard = 3
+texture_filter = 0
+texture = ExtResource("40_gpatchdark")
+
+[node name="MudPatch3" type="Sprite3D" parent="GroundDetails"]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 1, -11, 0.03, 12)
+billboard = 3
+texture_filter = 0
+texture = ExtResource("41_gpatchmud")
+
+[node name="Crack3" type="Sprite3D" parent="GroundDetails"]
+transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 1, 1, 0.03, -2)
+billboard = 3
+texture_filter = 0
+texture = ExtResource("43_gcrack")
+# --- FOREGROUND DEPTH (closer to camera, frames the view) ---
+
+[node name="Foreground" type="Node3D" parent="."]
+
+[node name="FenceTop1" type="Sprite3D" parent="Foreground"]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 1, -16, 0, 18)
+billboard = 2
+texture_filter = 0
+texture = ExtResource("44_dfence")
+
+[node name="FenceTop2" type="Sprite3D" parent="Foreground"]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 1, -3, 0, 18)
+billboard = 2
+texture_filter = 0
+texture = ExtResource("44_dfence")
+
+[node name="FenceTop3" type="Sprite3D" parent="Foreground"]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 1, 10, 0, 18)
+billboard = 2
+texture_filter = 0
+texture = ExtResource("44_dfence")
+
+[node name="ForegroundRock1" type="Sprite3D" parent="Foreground"]
+transform = Transform3D(3, 0, 0, 0, 2, 0, 0, 0, 1, -18, 0, 14)
+billboard = 2
+texture_filter = 0
+texture = ExtResource("45_drock")
+
+[node name="ForegroundRock2" type="Sprite3D" parent="Foreground"]
+transform = Transform3D(2.5, 0, 0, 0, 1.5, 0, 0, 0, 1, 16, 0, 15)
+billboard = 2
+texture_filter = 0
+texture = ExtResource("45_drock")
+
+[node name="ForegroundBush1" type="Sprite3D" parent="Foreground"]
+transform = Transform3D(3, 0, 0, 0, 2.5, 0, 0, 0, 1, -16, 0, 14)
+billboard = 2
+texture_filter = 0
+modulate = Color(0.4, 0.5, 0.35, 0.85)
+texture = ExtResource("46_dbush")
+
+[node name="ForegroundBush2" type="Sprite3D" parent="Foreground"]
+transform = Transform3D(2.5, 0, 0, 0, 2, 0, 0, 0, 1, 14, 0, 14)
+billboard = 2
+texture_filter = 0
+modulate = Color(0.35, 0.45, 0.3, 0.8)
+texture = ExtResource("46_dbush")
+# --- MIDGROUND DEPTH (village edges) ---
+
+[node name="Midground" type="Node3D" parent="."]
+
+[node name="FenceLeft1" type="Sprite3D" parent="Midground"]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 1, -18, 0, 4)
+billboard = 2
+texture_filter = 0
+texture = ExtResource("44_dfence")
+
+[node name="FenceLeft2" type="Sprite3D" parent="Midground"]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 1, -18, 0, -2)
+billboard = 2
+texture_filter = 0
+texture = ExtResource("44_dfence")
+
+[node name="FenceRight1" type="Sprite3D" parent="Midground"]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 1, 18, 0, 0)
+billboard = 2
+texture_filter = 0
+texture = ExtResource("44_dfence")
+
+[node name="MidRock1" type="Sprite3D" parent="Midground"]
+transform = Transform3D(2, 0, 0, 0, 1.5, 0, 0, 0, 1, -14, 0, -6)
+billboard = 2
+texture_filter = 0
+texture = ExtResource("45_drock")
+
+[node name="MidBush1" type="Sprite3D" parent="Midground"]
+transform = Transform3D(2, 0, 0, 0, 1.8, 0, 0, 0, 1, 14, 0, -6)
+billboard = 2
+texture_filter = 0
+modulate = Color(0.4, 0.5, 0.35, 0.8)
+texture = ExtResource("46_dbush")
+
+[node name="MidBush2" type="Sprite3D" parent="Midground"]
+transform = Transform3D(2.2, 0, 0, 0, 2, 0, 0, 0, 1, -14, 0, -12)
+billboard = 2
+texture_filter = 0
+modulate = Color(0.35, 0.45, 0.3, 0.75)
+texture = ExtResource("46_dbush")
+
+[node name="MidRock2" type="Sprite3D" parent="Midground"]
+transform = Transform3D(1.8, 0, 0, 0, 1.2, 0, 0, 0, 1, 16, 0, -8)
+billboard = 2
+texture_filter = 0
+texture = ExtResource("45_drock")
+
+# --- FOREGROUND ADDITIONS (more framing near camera) ---
+[node name="ForegroundFence4" type="Sprite3D" parent="Foreground"]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 1, 0, 0, 18)
+billboard = 2
+texture_filter = 0
+texture = ExtResource("44_dfence")
+
+[node name="ForegroundDeadTree1" type="Sprite3D" parent="Foreground"]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 1, -20, 0, 10)
+billboard = 2
+texture_filter = 0
+modulate = Color(0.3, 0.25, 0.2, 0.7)
+texture = ExtResource("47_dtree")
+
+[node name="ForegroundDeadTree2" type="Sprite3D" parent="Foreground"]
+transform = Transform3D(2.5, 0, 0, 0, 2.5, 0, 0, 0, 1, 18, 0, 10)
+billboard = 2
+texture_filter = 0
+modulate = Color(0.3, 0.25, 0.2, 0.65)
+texture = ExtResource("47_dtree")
+
+[node name="ForegroundRock3" type="Sprite3D" parent="Foreground"]
+transform = Transform3D(1.5, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, 16)
+billboard = 2
+texture_filter = 0
+texture = ExtResource("45_drock")
+
+[node name="ForegroundBush3" type="Sprite3D" parent="Foreground"]
+transform = Transform3D(2, 0, 0, 0, 1.5, 0, 0, 0, 1, 6, 0, 15)
+billboard = 2
+texture_filter = 0
+modulate = Color(0.4, 0.5, 0.35, 0.7)
+texture = ExtResource("46_dbush")
+
+# --- MIDGROUND ADDITIONS (clutter around village) ---
+[node name="MidBush3" type="Sprite3D" parent="Midground"]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1, 11, 0, 1)
+billboard = 2
+texture_filter = 0
+modulate = Color(0.35, 0.45, 0.3, 0.75)
+texture = ExtResource("46_dbush")
+
+[node name="MidBush4" type="Sprite3D" parent="Midground"]
+transform = Transform3D(1.8, 0, 0, 0, 1.5, 0, 0, 0, 1, -11, 0, -2)
+billboard = 2
+texture_filter = 0
+modulate = Color(0.4, 0.5, 0.35, 0.7)
+texture = ExtResource("46_dbush")
+
+[node name="MidRock3" type="Sprite3D" parent="Midground"]
+transform = Transform3D(1.2, 0, 0, 0, 0.8, 0, 0, 0, 1, -7, 0, -1)
+billboard = 2
+texture_filter = 0
+texture = ExtResource("45_drock")
+
+# --- BACKGROUND DEPTH (silhouettes along north road and village edges) ---
+[node name="BackgroundDepth" type="Node3D" parent="."]
+
+[node name="BgDeadTree1" type="Sprite3D" parent="BackgroundDepth"]
+transform = Transform3D(3.5, 0, 0, 0, 3.5, 0, 0, 0, 1, -12, 0, -16)
+billboard = 2
+texture_filter = 0
+modulate = Color(0.2, 0.18, 0.15, 0.5)
+texture = ExtResource("47_dtree")
+
+[node name="BgDeadTree2" type="Sprite3D" parent="BackgroundDepth"]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 1, 8, 0, -16)
+billboard = 2
+texture_filter = 0
+modulate = Color(0.2, 0.18, 0.15, 0.5)
+texture = ExtResource("47_dtree")
+
+[node name="BgDeadTree3" type="Sprite3D" parent="BackgroundDepth"]
+transform = Transform3D(4, 0, 0, 0, 4, 0, 0, 0, 1, -16, 0, -22)
+billboard = 2
+texture_filter = 0
+modulate = Color(0.2, 0.18, 0.15, 0.4)
+texture = ExtResource("47_dtree")
+
+[node name="BgDeadTree4" type="Sprite3D" parent="BackgroundDepth"]
+transform = Transform3D(3.5, 0, 0, 0, 3.5, 0, 0, 0, 1, 12, 0, -25)
+billboard = 2
+texture_filter = 0
+modulate = Color(0.2, 0.18, 0.15, 0.4)
+texture = ExtResource("47_dtree")
+
+[node name="BgDeadTree5" type="Sprite3D" parent="BackgroundDepth"]
+transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 1, 0, 0, -40)
+billboard = 2
+texture_filter = 0
+modulate = Color(0.18, 0.16, 0.13, 0.35)
+texture = ExtResource("47_dtree")
+
+[node name="BgBush1" type="Sprite3D" parent="BackgroundDepth"]
+transform = Transform3D(2.5, 0, 0, 0, 2, 0, 0, 0, 1, -15, 0, -14)
+billboard = 2
+texture_filter = 0
+modulate = Color(0.25, 0.35, 0.2, 0.4)
+texture = ExtResource("46_dbush")
+
+[node name="BgBush2" type="Sprite3D" parent="BackgroundDepth"]
+transform = Transform3D(2, 0, 0, 0, 1.5, 0, 0, 0, 1, 10, 0, -20)
+billboard = 2
+texture_filter = 0
+modulate = Color(0.25, 0.35, 0.2, 0.35)
+texture = ExtResource("46_dbush")
+
+# --- ENVIRONMENTAL STORYTELLING ---
+# Signs of daily life: weapons ready for defence
+[node name="StoryWeaponRack" type="Sprite3D" parent="."]
+transform = Transform3D(1.2, 0, 0, 0, 1.2, 0, 0, 0, 1, -3, 0, 2)
+billboard = 2
+texture_filter = 0
+texture = ExtResource("49_wrack")
+
+# Signs of danger: broken cart left on roadside after bandit attack
+[node name="StoryBrokenCart" type="Sprite3D" parent="."]
+transform = Transform3D(1.5, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, -3)
+billboard = 2
+texture_filter = 0
+texture = ExtResource("48_cart")
+
+# Signs of danger: stockade for discipline
+[node name="StoryStockade" type="Sprite3D" parent="."]
+transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 1, -10, 0, -1)
+billboard = 2
+texture_filter = 0
+texture = ExtResource("50_stock")

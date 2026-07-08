@@ -1,0 +1,42 @@
+# Godot 4+ specific ignores
+.godot/
+
+# Imported resource sidecar files
+*.import
+
+# Exported builds
+*.pck
+*.zip
+build/
+export/
+
+# Mono/C# specific
+.mono/
+data_*/
+mono_crash.*.json
+
+# Platform specific
+*.exe
+*.app
+*.dmg
+*.x86_64
+*.x86
+*.arm64
+
+# IDE and editor
+.vscode/
+.idea/
+*.swp
+*~
+
+# OS generated
+.DS_Store
+Thumbs.db
+desktop.ini
+*.tmp
+
+# Text files that are usually generated
+*.log
+
+# Arena AI / tool cache folders
+.arena/
