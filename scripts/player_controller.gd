@@ -54,8 +54,8 @@ func _ready() -> void:
 	current_stamina = max_stamina
 	current_mana = max_mana
 
-	if ResourceLoader.exists("res://art_v2/player_idle.png"):
-		tex_idle = load("res://art_v2/player_idle.png") as Texture2D
+	if ResourceLoader.exists("res://art_v2/player_idle_hooded.png"):
+		tex_idle = load("res://art_v2/player_idle_hooded.png") as Texture2D
 	# Run/attack animations use idle as fallback if not available
 	if ResourceLoader.exists("res://art_v2/player_run.png"):
 		tex_run1 = load("res://art_v2/player_run.png") as Texture2D
@@ -354,10 +354,37 @@ func _on_melee_hit(body: Node3D) -> void:
 		body.take_damage(attack_damage)
 		print("Hit target: ", body.name, " for ", attack_damage, " damage!")
 
+func _get_combat_feedback():
+	var tree := get_tree()
+	var feedback = tree.root.find_child("CombatFeedback", true, false)
+	if feedback:
+		return feedback
+
+	var feedback_script = load("res://scripts/combat_feedback.gd")
+	if feedback_script == null:
+		return null
+
+	feedback = Node.new()
+	feedback.name = "CombatFeedback"
+	feedback.set_script(feedback_script)
+
+	var parent: Node = tree.current_scene
+	if parent == null:
+		parent = tree.root
+	parent.add_child(feedback)
+	return feedback
+
 func take_damage(amount: float) -> void:
+	var feedback = _get_combat_feedback()
+	var impact_pos := global_position + Vector3(0, 1.15, 0)
+
 	if has_quen_shield:
 		has_quen_shield = false
 		print("[Magic] Quen Shield absorbed the attack!")
+		if feedback:
+			feedback.spawn_floating_text("BLOCK", impact_pos + Vector3(0, 0.65, 0), Color(1.0, 0.9, 0.25, 1), 58, 1.2)
+			feedback.spawn_impact_effect(impact_pos, Color(1.0, 0.9, 0.25, 1), 0.72, 9)
+			feedback.screen_shake(0.11, 0.12)
 		if hud and hud.has_method("show_notification"):
 			hud.show_notification("✨ Quen Shield Absorbed " + str(amount) + " Dmg!", Color(1.0, 0.9, 0.2, 1))
 		if sprite:
@@ -367,16 +394,17 @@ func take_damage(amount: float) -> void:
 	current_health = max(0.0, current_health - amount)
 	print("[Player] OUCH! Took ", amount, " damage from enemy! Health remaining: ", current_health)
 
+	if feedback:
+		feedback.spawn_damage_number(amount, impact_pos + Vector3(0, 0.75, 0), Color(1.0, 0.25, 0.18, 1), amount >= 30.0)
+		feedback.spawn_impact_effect(impact_pos, Color(1.0, 0.16, 0.10, 1), 0.62, 8)
+		feedback.screen_shake(0.18, 0.18)
+		feedback.hit_flash(sprite, Color(1.0, 0.08, 0.05, 1), 0.04, 0.12)
+
 	if hud:
 		if hud.has_method("update_health"):
 			hud.update_health(current_health, max_health)
 		if hud.has_method("show_notification"):
 			hud.show_notification("Took " + str(amount) + " Damage!", Color(1, 0.2, 0.2, 1))
-
-	if sprite:
-		var tween := create_tween()
-		tween.tween_property(sprite, "modulate", Color(1, 0.2, 0.2, 1), 0.1)
-		tween.tween_property(sprite, "modulate", Color(1, 1, 1, 1), 0.1)
 
 	if current_health <= 0:
 		print("[Player] You have fallen in battle! Respawning...")

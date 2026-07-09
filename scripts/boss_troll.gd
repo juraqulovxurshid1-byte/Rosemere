@@ -11,6 +11,7 @@ class_name BossTroll
 
 @onready var sprite: Sprite3D = $Sprite3D
 @onready var aggro_area: Area3D = $AggroArea
+@onready var collision_shape: CollisionShape3D = $CollisionShape3D
 
 var current_health: float = max_health
 var target_player: Node3D = null
@@ -87,18 +88,26 @@ func take_damage(amount: float) -> void:
 	var hud := get_tree().root.find_child("HUD", true, false) as HUD
 	if hud and hud.has_method("show_boss_bar"):
 		hud.show_boss_bar(enemy_name, current_health, max_health)
-	
-	if sprite:
-		var tween := create_tween()
-		tween.tween_property(sprite, "modulate", Color(1, 0.1, 0.8, 1), 0.1)
-		tween.tween_property(sprite, "modulate", Color(0.6, 0.2, 0.7, 1), 0.1)
+
+	var feedback = _get_combat_feedback()
+	var impact_pos := global_position + Vector3(0, 1.8, 0)
+	if feedback:
+		feedback.spawn_damage_number(amount, impact_pos + Vector3(0, 0.95, 0), Color(1.0, 0.58, 1.0, 1), true)
+		feedback.spawn_impact_effect(impact_pos, Color(1.0, 0.32, 0.9, 1), 0.85, 11)
+		feedback.screen_shake(0.16, 0.14)
 		
 	if current_health <= 0:
 		die()
+	else:
+		if feedback:
+			feedback.hit_flash(sprite, Color(1.0, 1.0, 1.0, 1), 0.045, 0.13)
 
 func die() -> void:
 	is_dead = true
+	velocity = Vector3.ZERO
 	print("[", enemy_name, "] has been slain!")
+
+	_disable_combat_collision()
 	
 	var hud := get_tree().root.find_child("HUD", true, false) as HUD
 	if hud:
@@ -113,12 +122,53 @@ func die() -> void:
 			player.add_gold(150)
 		if player.has_method("level_up"):
 			player.level_up()
+
+	var feedback = _get_combat_feedback()
+	if feedback:
+		feedback.spawn_death_effect(global_position + Vector3(0, 2.0, 0), true)
+		feedback.screen_shake(0.48, 0.42)
 	
 	if sprite:
+		var original_scale := sprite.scale
 		var tween := create_tween()
-		tween.tween_property(sprite, "rotation:z", deg_to_rad(90), 0.5)
+		tween.tween_property(sprite, "modulate", Color(1.0, 1.0, 1.0, 1), 0.08)
+		tween.parallel().tween_property(sprite, "scale", original_scale * 1.18, 0.14).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tween.tween_property(sprite, "rotation:z", deg_to_rad(88), 0.65).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+		tween.parallel().tween_property(sprite, "scale", original_scale * 0.72, 0.65)
 		tween.parallel().tween_property(sprite, "modulate:a", 0.0, 1.0)
 		tween.tween_callback(queue_free)
+	else:
+		queue_free()
+
+func _disable_combat_collision() -> void:
+	if collision_shape:
+		collision_shape.set_deferred("disabled", true)
+	if aggro_area:
+		aggro_area.set_deferred("monitoring", false)
+		aggro_area.set_deferred("monitorable", false)
+		var aggro_shape := aggro_area.get_node_or_null("CollisionShape3D") as CollisionShape3D
+		if aggro_shape:
+			aggro_shape.set_deferred("disabled", true)
+
+func _get_combat_feedback():
+	var tree := get_tree()
+	var feedback = tree.root.find_child("CombatFeedback", true, false)
+	if feedback:
+		return feedback
+
+	var feedback_script = load("res://scripts/combat_feedback.gd")
+	if feedback_script == null:
+		return null
+
+	feedback = Node.new()
+	feedback.name = "CombatFeedback"
+	feedback.set_script(feedback_script)
+
+	var parent: Node = tree.current_scene
+	if parent == null:
+		parent = tree.root
+	parent.add_child(feedback)
+	return feedback
 
 func _on_body_entered_aggro(body: Node3D) -> void:
 	if body is PlayerController and not is_dead:

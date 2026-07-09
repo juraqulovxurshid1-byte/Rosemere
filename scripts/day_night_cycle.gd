@@ -14,14 +14,15 @@ func _physics_process(delta: float) -> void:
 	
 	var t := (angle + 90.0) / 180.0
 	t = clamp(t, 0.0, 1.0)
+	var day_t := sin(t * PI)
 	
-	# Cool daylight - subtle range to keep readability
-	light_energy = lerp(0.65, 0.9, t)
+	# Grimdark overcast cycle: dim/cold at dawn and evening, brighter neutral at noon
+	light_energy = lerp(0.35, 1.25, day_t)
 	
-	# Cool blue-white tint throughout
-	var cold_tint := Color(0.65, 0.72, 0.85, 1)
-	var neutral_tint := Color(0.75, 0.78, 0.82, 1)
-	light_color = cold_tint.lerp(neutral_tint, t)
+	# Cool blue-gray low light into pale neutral overcast noon light
+	var cold_tint := Color(0.52, 0.60, 0.74, 1)
+	var noon_tint := Color(0.82, 0.82, 0.78, 1)
+	light_color = cold_tint.lerp(noon_tint, day_t)
 	
 	if angle > -45.0 and angle <= 45.0:
 		time_of_day_str = "☁️ Bleak Noon"

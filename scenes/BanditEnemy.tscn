@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/enemy_ai.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://art_v2/bandit.png" id="2_icon"]
+[ext_resource type="Texture2D" path="res://art_v2/bandit_b.png" id="2_icon"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_enemy"]
 radius = 0.4
@@ -21,8 +21,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 shape = SubResource("CapsuleShape3D_enemy")
 
 [node name="Sprite3D" type="Sprite3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.73, 0)
 billboard = 2
+shaded = true
 texture_filter = 0
 texture = ExtResource("2_icon")
 
