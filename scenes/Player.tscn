@@ -37,6 +37,7 @@ transform = Transform3D(1, 0, 0, 0, 0.76604444, 0.64278761, 0, -0.64278761, 0.76
 projection = 1
 size = 48.0
 fov = 25.0
+far = 10000.0
 current = true
 
 
