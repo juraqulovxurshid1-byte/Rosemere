@@ -33,9 +33,9 @@ texture = ExtResource("2_icon")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 
 [node name="Camera3D" type="Camera3D" parent="CameraPivot"]
-transform = Transform3D(1, 0, 0, 0, 0.76604444, 0.64278761, 0, -0.64278761, 0.76604444, 0, 20, 22)
+transform = Transform3D(1, 0, 0, 0, 0.76604444, 0.64278761, 0, -0.64278761, 0.76604444, 0, 45, 50)
 projection = 1
-size = 22.0
+size = 48.0
 fov = 25.0
 current = true
 

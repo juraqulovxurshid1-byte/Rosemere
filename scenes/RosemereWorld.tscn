@@ -25,6 +25,7 @@
 [ext_resource type="Texture2D" path="res://art_v2/grimdark_church.png" id="25_grimchurch"]
 [ext_resource type="Texture2D" path="res://art_v2/castle_silhouette.png" id="26_grimcastle"]
 [ext_resource type="Texture2D" path="res://art_v2/grimdark_torch.png" id="27_grimtorch"]
+[ext_resource type="Texture2D" path="res://art_v2/ornate_torch.png" id="61_ornatetorch"]
 [ext_resource type="Texture2D" path="res://art_v2/grimdark_barrel.png" id="28_grimbarrel"]
 [ext_resource type="Texture2D" path="res://art_v2/grimdark_signpost.png" id="29_grimsign"]
 [ext_resource type="Texture2D" path="res://art_v2/cobblestone_ground.png" id="30_cobbletex"]
@@ -63,11 +64,11 @@ ambient_light_color = Color(0.5, 0.55, 0.65, 1)
 ambient_light_energy = 1.0
 ambient_light_sky_contribution = 0.7
 glow_enabled = false
-fog_enabled = true
+fog_enabled = false
 fog_light_color = Color(0.34, 0.39, 0.49, 1)
 fog_density = 0.00035
-fog_height = 1.5
-fog_height_density = 0.1
+fog_height = 15.0
+fog_height_density = 0.02
 fog_sun_scatter = 0.0
 
 [sub_resource type="BoxMesh" id="BoxMesh_floor"]
@@ -158,8 +159,8 @@ mesh = SubResource("BoxMesh_floor")
 shape = SubResource("BoxShape3D_floor")
 # --- GRIMDARK BUILDINGS ---
 
-[node name="GrimTavern" type="Sprite3D" parent="."]
-transform = Transform3D(4.025, 0, 0, 0, 4.025, 0, 0, 0, 4.025, 6.2, 15.4761, -1)
+[node name="GrimTavern" type="Sprite3D" parent="VillageLayout/Buildings"]
+transform = Transform3D(4.025, 0, 0, 0, 4.025, 0, 0, 0, 4.025, 15.0, 15.4761, -1.5)
 billboard = 2
 shaded = true
 texture_filter = 0
@@ -168,8 +169,8 @@ alpha_scissor_threshold = 0.25
 cast_shadow = 2
 texture = ExtResource("22_grimtavern")
 
-[node name="GrimHouse1" type="Sprite3D" parent="."]
-transform = Transform3D(3.45, 0, 0, 0, 3.45, 0, 0, 0, 3.45, -6.6, 12.8685, -3.6)
+[node name="GrimHouse1" type="Sprite3D" parent="VillageLayout/Buildings"]
+transform = Transform3D(3.45, 0, 0, 0, 3.45, 0, 0, 0, 3.45, -14.0, 12.8685, -0.5)
 billboard = 2
 shaded = true
 texture_filter = 0
@@ -178,8 +179,8 @@ alpha_scissor_threshold = 0.25
 cast_shadow = 2
 texture = ExtResource("23_grimhouse1")
 
-[node name="GrimHouse2" type="Sprite3D" parent="."]
-transform = Transform3D(3.45, 0, 0, 0, 3.45, 0, 0, 0, 3.45, 9.5, 12.8685, 2.1)
+[node name="GrimHouse2" type="Sprite3D" parent="VillageLayout/Buildings"]
+transform = Transform3D(3.45, 0, 0, 0, 3.45, 0, 0, 0, 3.45, 14.2, 12.8685, -1.5)
 billboard = 2
 shaded = true
 texture_filter = 0
@@ -188,8 +189,8 @@ alpha_scissor_threshold = 0.25
 cast_shadow = 2
 texture = ExtResource("24_grimhouse2")
 
-[node name="GrimHouse3" type="Sprite3D" parent="."]
-transform = Transform3D(3.45, 0, 0, 0, 3.45, 0, 0, 0, 3.45, 6.8, 12.8685, 6.2)
+[node name="GrimHouse3" type="Sprite3D" parent="VillageLayout/Buildings"]
+transform = Transform3D(3.45, 0, 0, 0, 3.45, 0, 0, 0, 3.45, 13.8, 12.8685, -15.5)
 billboard = 2
 shaded = true
 texture_filter = 0
@@ -198,8 +199,8 @@ alpha_scissor_threshold = 0.25
 cast_shadow = 2
 texture = ExtResource("23_grimhouse1")
 
-[node name="GrimHouse4" type="Sprite3D" parent="."]
-transform = Transform3D(3.68, 0, 0, 0, 3.68, 0, 0, 0, 3.68, 9.9, 13.7264, -5.5)
+[node name="GrimHouse4" type="Sprite3D" parent="VillageLayout/Buildings"]
+transform = Transform3D(3.68, 0, 0, 0, 3.68, 0, 0, 0, 3.68, -14.5, 13.7264, 1.2)
 billboard = 2
 shaded = true
 texture_filter = 0
@@ -208,8 +209,8 @@ alpha_scissor_threshold = 0.25
 cast_shadow = 2
 texture = ExtResource("24_grimhouse2")
 
-[node name="GrimHouse5" type="Sprite3D" parent="."]
-transform = Transform3D(3.45, 0, 0, 0, 3.45, 0, 0, 0, 3.45, -6.8, 12.8685, 5.8)
+[node name="GrimHouse5" type="Sprite3D" parent="VillageLayout/Buildings"]
+transform = Transform3D(3.45, 0, 0, 0, 3.45, 0, 0, 0, 3.45, -12.2, 12.8685, -2.0)
 billboard = 2
 shaded = true
 texture_filter = 0
@@ -218,8 +219,8 @@ alpha_scissor_threshold = 0.25
 cast_shadow = 2
 texture = ExtResource("23_grimhouse1")
 
-[node name="GrimChurch" type="Sprite3D" parent="."]
-transform = Transform3D(3.45, 0, 0, 0, 5.175, 0, 0, 0, 3.45, -8.8, 19.6909, 1.6)
+[node name="GrimChurch" type="Sprite3D" parent="VillageLayout/Buildings"]
+transform = Transform3D(3.45, 0, 0, 0, 5.175, 0, 0, 0, 3.45, 1.0, 19.6909, -24.0)
 billboard = 2
 shaded = true
 texture_filter = 0
@@ -228,8 +229,8 @@ alpha_scissor_threshold = 0.25
 cast_shadow = 2
 texture = ExtResource("25_grimchurch")
 
-[node name="GrimHouse6" type="Sprite3D" parent="."]
-transform = Transform3D(3.22, 0, 0, 0, 3.22, 0, 0, 0, 3.22, -2.8, 12.0106, 7)
+[node name="GrimHouse6" type="Sprite3D" parent="VillageLayout/Buildings"]
+transform = Transform3D(3.22, 0, 0, 0, 3.22, 0, 0, 0, 3.22, -12.8, 12.0106, -2.8)
 billboard = 2
 shaded = true
 texture_filter = 0
@@ -238,8 +239,8 @@ alpha_scissor_threshold = 0.25
 cast_shadow = 2
 texture = ExtResource("23_grimhouse1")
 
-[node name="GrimHouse7" type="Sprite3D" parent="."]
-transform = Transform3D(3.22, 0, 0, 0, 3.22, 0, 0, 0, 3.22, 2.9, 12.0106, 6.9)
+[node name="GrimHouse7" type="Sprite3D" parent="VillageLayout/Buildings"]
+transform = Transform3D(3.22, 0, 0, 0, 3.22, 0, 0, 0, 3.22, 13.5, 12.0106, -2.5)
 billboard = 2
 shaded = true
 texture_filter = 0
@@ -247,6 +248,418 @@ alpha_cut = 1
 alpha_scissor_threshold = 0.25
 cast_shadow = 2
 texture = ExtResource("23_grimhouse1")
+
+# --- VILLAGE LAYOUT (Phase C: 2.5D Grid + Central Highway) ---
+# Per approved plan + Gemini's 3 modifications:
+# 1. Highway cleared (GrimHouse6 @ X=-5.5, GrimHouse7 @ X=5.2)
+# 2. All new buildings at Y=0 (grounding rule - no Y math)
+# 3. Exactly 11 new buildings → total 20
+[node name="VillageLayout" type="Node3D" parent="."]
+
+[node name="Buildings" type="Node3D" parent="VillageLayout"]
+
+[node name="Roads" type="Node3D" parent="VillageLayout"]
+
+# --- CENTRAL HIGHWAY DECAL (main north-south road, X≈1.0 corridor) ---
+[node name="MainHighway" type="Decal" parent="VillageLayout/Roads"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0.38, -8.5)
+size = Vector3(8.2, 0.65, 42)
+texture_albedo = ExtResource("41_gpatchmud")
+albedo_mix = 0.82
+modulate = Color(1, 1, 1, 1)
+upper_fade = 0.0
+lower_fade = 0.0
+normal_fade = 0.0
+distance_fade_enabled = true
+distance_fade_begin = 35.0
+distance_fade_length = 18.0
+cull_mask = 1
+
+# --- SIDE ROAD DECALS (Gemini Phase) ---
+# Horizontal/diagonal branches connecting West (Church) + East clusters
+
+[node name="WestSideRoad" type="Decal" parent="VillageLayout/Roads"]
+transform = Transform3D(0.96592583, 0, 0.25881905, 0, 1, 0, -0.25881905, 0, 0.96592583, -13.5, 0.37, 5.5)
+size = Vector3(8.5, 0.55, 22)
+texture_albedo = ExtResource("40_gpatchdark")
+albedo_mix = 0.78
+modulate = Color(1, 1, 1, 1)
+upper_fade = 0.0
+lower_fade = 0.0
+normal_fade = 0.0
+distance_fade_enabled = true
+distance_fade_begin = 22.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="EastSideRoad" type="Decal" parent="VillageLayout/Roads"]
+transform = Transform3D(0.93969262, 0, -0.34202014, 0, 1, 0, 0.34202014, 0, 0.93969262, 14.0, 0.37, 4.5)
+size = Vector3(9.5, 0.55, 22)
+texture_albedo = ExtResource("41_gpatchmud")
+albedo_mix = 0.8
+modulate = Color(1, 1, 1, 1)
+upper_fade = 0.0
+lower_fade = 0.0
+normal_fade = 0.0
+distance_fade_enabled = true
+distance_fade_begin = 22.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="SouthCrossRoad" type="Decal" parent="VillageLayout/Roads"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.0, 0.37, 12.0)
+size = Vector3(22, 0.55, 5.8)
+texture_albedo = ExtResource("40_gpatchdark")
+albedo_mix = 0.75
+modulate = Color(1, 1, 1, 1)
+upper_fade = 0.0
+lower_fade = 0.0
+normal_fade = 0.0
+distance_fade_enabled = true
+distance_fade_begin = 25.0
+distance_fade_length = 12.0
+cull_mask = 1
+
+[node name="NorthCrossRoad" type="Decal" parent="VillageLayout/Roads"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.0, 0.37, -8.0)
+size = Vector3(20, 0.52, 6.5)
+texture_albedo = ExtResource("41_gpatchmud")
+
+# --- NORTHERN T-JUNCTION HORIZONTAL ROAD (new grand crossroad) ---
+[node name="TJunctionCross" type="Decal" parent="VillageLayout/Roads"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.0, 0.37, -23.0)
+size = Vector3(38, 0.65, 7.2)
+texture_albedo = ExtResource("40_gpatchdark")
+albedo_mix = 0.80
+modulate = Color(1, 1, 1, 1)
+upper_fade = 0.0
+lower_fade = 0.0
+normal_fade = 0.0
+distance_fade_enabled = true
+distance_fade_begin = 32.0
+distance_fade_length = 16.0
+cull_mask = 1
+
+# --- T-JUNCTION WEST & EAST EXTENSIONS (far arms of the horizontal road) ---
+[node name="TWestArm" type="Decal" parent="VillageLayout/Roads"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.5, 0.37, -23.0)
+size = Vector3(13, 0.55, 6.8)
+texture_albedo = ExtResource("41_gpatchmud")
+albedo_mix = 0.78
+modulate = Color(1, 1, 1, 1)
+upper_fade = 0.0
+lower_fade = 0.0
+normal_fade = 0.0
+distance_fade_enabled = true
+distance_fade_begin = 30.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="TEastArm" type="Decal" parent="VillageLayout/Roads"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.5, 0.37, -23.0)
+size = Vector3(13, 0.55, 6.8)
+texture_albedo = ExtResource("41_gpatchmud")
+albedo_mix = 0.78
+modulate = Color(1, 1, 1, 1)
+upper_fade = 0.0
+lower_fade = 0.0
+normal_fade = 0.0
+distance_fade_enabled = true
+distance_fade_begin = 30.0
+distance_fade_length = 14.0
+cull_mask = 1
+albedo_mix = 0.76
+modulate = Color(1, 1, 1, 1)
+upper_fade = 0.0
+lower_fade = 0.0
+normal_fade = 0.0
+distance_fade_enabled = true
+distance_fade_begin = 22.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="MidNorthConnector" type="Decal" parent="VillageLayout/Roads"]
+transform = Transform3D(0.8660254, 0, 0.5, 0, 1, 0, -0.5, 0, 0.8660254, 1.0, 0.37, -15.0)
+size = Vector3(8.0, 0.5, 15.0)
+texture_albedo = ExtResource("40_gpatchdark")
+albedo_mix = 0.81
+modulate = Color(1, 1, 1, 1)
+upper_fade = 0.0
+lower_fade = 0.0
+normal_fade = 0.0
+distance_fade_enabled = true
+distance_fade_begin = 28.0
+distance_fade_length = 15.0
+cull_mask = 1
+
+# --- CLUSTER PROPS DRESSING (Gemini side streets & lived-in feel) ---
+[node name="ClusterProps" type="Node3D" parent="VillageLayout"]
+
+# Property line fences - West cluster (Church side)
+[node name="FenceWest1" type="Sprite3D" parent="VillageLayout/ClusterProps"]
+transform = Transform3D(1.4, 0, 0, 0, 1.4, 0, 0, 0, 1.4, -11.8, 1.4, 10.5)
+billboard = 2
+shaded = true
+texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
+texture = ExtResource("44_dfence")
+
+[node name="FenceWest2" type="Sprite3D" parent="VillageLayout/ClusterProps"]
+transform = Transform3D(1.3, 0, 0, 0, 1.3, 0, 0, 0, 1.3, -11.2, 1.4, 8.2)
+billboard = 2
+shaded = true
+texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
+texture = ExtResource("44_dfence")
+
+[node name="FenceWest3" type="Sprite3D" parent="VillageLayout/ClusterProps"]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -9.8, 1.4, 11.8)
+billboard = 2
+shaded = true
+texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
+texture = ExtResource("44_dfence")
+
+# Property line fences - East cluster
+[node name="FenceEast1" type="Sprite3D" parent="VillageLayout/ClusterProps"]
+transform = Transform3D(1.35, 0, 0, 0, 1.35, 0, 0, 0, 1.35, 11.5, 1.4, 9.5)
+billboard = 2
+shaded = true
+texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
+texture = ExtResource("44_dfence")
+
+[node name="FenceEast2" type="Sprite3D" parent="VillageLayout/ClusterProps"]
+transform = Transform3D(1.25, 0, 0, 0, 1.25, 0, 0, 0, 1.25, 10.8, 1.4, 11.8)
+billboard = 2
+shaded = true
+texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
+texture = ExtResource("44_dfence")
+
+# Lighting - Torches near side road intersections and doorways (scaled appropriately)
+[node name="RoadTorchSouth" type="Sprite3D" parent="VillageLayout/ClusterProps"]
+transform = Transform3D(0.6, 0, 0, 0, 0.8, 0, 0, 0, 0.6, 2.2, 0.6, 9.3)
+billboard = 2
+shaded = true
+texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
+texture = ExtResource("27_grimtorch")
+
+[node name="RoadTorchEast" type="Sprite3D" parent="VillageLayout/ClusterProps"]
+transform = Transform3D(0.6, 0, 0, 0, 0.8, 0, 0, 0, 0.6, 9.8, 0.55, 5.8)
+billboard = 2
+shaded = true
+texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
+texture = ExtResource("27_grimtorch")
+
+[node name="RoadTorchWest" type="Sprite3D" parent="VillageLayout/ClusterProps"]
+transform = Transform3D(0.6, 0, 0, 0, 0.8, 0, 0, 0, 0.6, -9.2, 0.55, 3.8)
+billboard = 2
+shaded = true
+texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
+texture = ExtResource("27_grimtorch")
+
+[node name="HouseTorchNW" type="Sprite3D" parent="VillageLayout/ClusterProps"]
+transform = Transform3D(0.6, 0, 0, 0, 0.8, 0, 0, 0, 0.6, -7.8, 0.5, 4.2)
+billboard = 2
+shaded = true
+texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
+texture = ExtResource("27_grimtorch")
+
+[node name="HouseTorchSE" type="Sprite3D" parent="VillageLayout/ClusterProps"]
+transform = Transform3D(0.6, 0, 0, 0, 0.8, 0, 0, 0, 0.6, 12.5, 0.5, 8.2)
+billboard = 2
+shaded = true
+texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
+texture = ExtResource("27_grimtorch")
+
+# Clutter - Barrels near Tavern and store entrances
+[node name="TavernBarrelCluster1" type="Sprite3D" parent="VillageLayout/ClusterProps"]
+transform = Transform3D(0.48, 0, 0, 0, 0.48, 0, 0, 0, 0.48, 7.4, 1.2, -1.9)
+billboard = 2
+shaded = true
+texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
+texture = ExtResource("28_grimbarrel")
+
+[node name="TavernBarrelCluster2" type="Sprite3D" parent="VillageLayout/ClusterProps"]
+transform = Transform3D(0.45, 0, 0, 0, 0.45, 0, 0, 0, 0.45, 5.9, 1.2, -1.1)
+billboard = 2
+shaded = true
+texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
+texture = ExtResource("28_grimbarrel")
+
+[node name="TavernBarrelCluster3" type="Sprite3D" parent="VillageLayout/ClusterProps"]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 7.9, 1.2, -0.4)
+billboard = 2
+shaded = true
+texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
+texture = ExtResource("28_grimbarrel")
+
+[node name="SEHouseBarrel1" type="Sprite3D" parent="VillageLayout/ClusterProps"]
+transform = Transform3D(0.48, 0, 0, 0, 0.48, 0, 0, 0, 0.48, 13.4, 1.2, 8.9)
+billboard = 2
+shaded = true
+texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
+texture = ExtResource("28_grimbarrel")
+
+[node name="SEHouseBarrel2" type="Sprite3D" parent="VillageLayout/ClusterProps"]
+transform = Transform3D(0.45, 0, 0, 0, 0.45, 0, 0, 0, 0.45, 12.9, 1.2, 10.2)
+billboard = 2
+shaded = true
+texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
+texture = ExtResource("28_grimbarrel")
+
+# --- NEW BUILDINGS (11 total, all Y=0) ---
+[node name="NewHouseSW1" type="Sprite3D" parent="VillageLayout/Buildings"]
+transform = Transform3D(3.35, 0, 0, 0, 3.35, 0, 0, 0, 3.35, -15.5, 12.50, 14.5)
+billboard = 2
+shaded = true
+texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
+texture = ExtResource("23_grimhouse1")
+
+[node name="NewHouseSW2" type="Sprite3D" parent="VillageLayout/Buildings"]
+transform = Transform3D(3.45, 0, 0, 0, 3.45, 0, 0, 0, 3.45, -14.0, 12.8685, 11.0)
+billboard = 2
+shaded = true
+texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
+texture = ExtResource("23_grimhouse1")
+
+[node name="NewHouseSW3" type="Sprite3D" parent="VillageLayout/Buildings"]
+transform = Transform3D(3.28, 0, 0, 0, 3.28, 0, 0, 0, 3.28, -17.0, 12.50, 9.5)
+billboard = 2
+shaded = true
+texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
+texture = ExtResource("23_grimhouse1")
+
+[node name="NewHouseSE1" type="Sprite3D" parent="VillageLayout/Buildings"]
+transform = Transform3D(3.52, 0, 0, 0, 3.52, 0, 0, 0, 3.52, 16.0, 13.10, 13.5)
+billboard = 2
+shaded = true
+texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
+texture = ExtResource("23_grimhouse1")
+
+[node name="NewHouseSE2" type="Sprite3D" parent="VillageLayout/Buildings"]
+transform = Transform3D(3.4, 0, 0, 0, 3.4, 0, 0, 0, 3.4, 15.5, 12.70, 10.0)
+billboard = 2
+shaded = true
+texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
+texture = ExtResource("23_grimhouse1")
+
+[node name="NewHouseSE3" type="Sprite3D" parent="VillageLayout/Buildings"]
+transform = Transform3D(3.8, 0, 0, 0, 3.8, 0, 0, 0, 3.8, 17.5, 14.20, 9.0)
+billboard = 2
+shaded = true
+texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
+texture = ExtResource("22_grimtavern")
+
+[node name="NewHouseNW1" type="Sprite3D" parent="VillageLayout/Buildings"]
+transform = Transform3D(3.3, 0, 0, 0, 3.3, 0, 0, 0, 3.3, -19.0, 12.45, -24.0)
+billboard = 2
+shaded = true
+texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
+texture = ExtResource("23_grimhouse1")
+
+[node name="NewHouseNW2" type="Sprite3D" parent="VillageLayout/Buildings"]
+transform = Transform3D(3.45, 0, 0, 0, 3.45, 0, 0, 0, 3.45, -7.0, 12.8685, -24.0)
+billboard = 2
+shaded = true
+texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
+texture = ExtResource("23_grimhouse1")
+
+[node name="NewHouseNE1" type="Sprite3D" parent="VillageLayout/Buildings"]
+transform = Transform3D(3.38, 0, 0, 0, 3.38, 0, 0, 0, 3.38, 9.5, 12.65, -24.0)
+billboard = 2
+shaded = true
+texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
+texture = ExtResource("23_grimhouse1")
+
+[node name="NewHouseN1" type="Sprite3D" parent="VillageLayout/Buildings"]
+transform = Transform3D(3.25, 0, 0, 0, 3.25, 0, 0, 0, 3.25, -12.2, 12.30, -24.0)
+billboard = 2
+shaded = true
+texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
+texture = ExtResource("23_grimhouse1")
+
+[node name="NewHouseN2" type="Sprite3D" parent="VillageLayout/Buildings"]
+transform = Transform3D(3.55, 0, 0, 0, 3.55, 0, 0, 0, 3.55, 10.5, 13.30, -24.0)
+billboard = 2
+shaded = true
+texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
+texture = ExtResource("23_grimhouse1")
+
 # --- PROPS ---
 
 [node name="Props" type="Node3D" parent="."]
@@ -404,7 +817,7 @@ omni_range = 5.5
 shadow_enabled = false
 
 [node name="Player" parent="." instance=ExtResource("1_player")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 6)
 
 [node name="BlacksmithNPC" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.2, 0, -1.1)
@@ -523,6 +936,63 @@ dialogue_lines = [
 	"My pa says the troll's as big as a house!",
 	"I found a rusty dagger near the old road...",
 	"Can you teach me to fight? Please?"
+]
+
+# --- NEW VILLAGERS (Gemini: 4 additional for side streets & clusters) ---
+[node name="ElaraWeaver" parent="Villagers" instance=ExtResource("17_villager")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8, 0, 1.4)
+villager_name = "Elara the Weaver"
+wander_radius = 4.2
+move_speed = 1.6
+pause_min = 2.5
+pause_max = 5.5
+dialogue_lines = [
+	"The new road to the north feels safer already.",
+	"These side streets used to be just mud paths.",
+	"Have you seen the new houses going up?",
+	"Stay for a bit — the tavern has fresh bread today."
+]
+
+[node name="BrotherFinn" parent="Villagers" instance=ExtResource("17_villager")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.8, 0, 2.1)
+villager_name = "Brother Finn"
+wander_radius = 3.0
+move_speed = 1.4
+pause_min = 3.0
+pause_max = 6.0
+dialogue_lines = [
+	"The old church still stands... barely.",
+	"Many come to pray before heading north.",
+	"Bandits fear the church grounds at night.",
+	"May the light guide your path to the castle."
+]
+
+[node name="MiraHerbalist" parent="Villagers" instance=ExtResource("17_villager")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.2, 0, 5.8)
+villager_name = "Mira the Herbalist"
+wander_radius = 4.8
+move_speed = 1.75
+pause_min = 2.0
+pause_max = 4.5
+dialogue_lines = [
+	"These east side streets are perfect for foraging.",
+	"I sell remedies to travelers on the new road.",
+	"Watch your step — the mud gets deep after rain.",
+	"The tavern's innkeeper buys my healing herbs."
+]
+
+[node name="OldJorn" parent="Villagers" instance=ExtResource("17_villager")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 0, 8.9)
+villager_name = "Old Jorn"
+wander_radius = 3.8
+move_speed = 1.3
+pause_min = 4.0
+pause_max = 8.0
+dialogue_lines = [
+	"I remember when there was no road north at all.",
+	"These new houses bring life back to Rosemere.",
+	"Keep to the main highway at night, traveler.",
+	"The castle silhouette still gives me chills."
 ]
 
 [node name="Campfire" type="Node3D" parent="."]
