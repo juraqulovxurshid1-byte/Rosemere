@@ -25,15 +25,20 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.53, 0)
 billboard = 2
 shaded = true
 texture_filter = 0
+alpha_cut = 2
+alpha_scissor_threshold = 0.12
 texture = ExtResource("2_icon")
 
 [node name="CameraPivot" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 
 [node name="Camera3D" type="Camera3D" parent="CameraPivot"]
-transform = Transform3D(1, 0, 0, 0, 0.5, 0.866, 0, -0.866, 0.5, 0, 40, 27)
+transform = Transform3D(1, 0, 0, 0, 0.76604444, 0.64278761, 0, -0.64278761, 0.76604444, 0, 20, 22)
+projection = 1
+size = 22.0
+fov = 25.0
 current = true
-fov = 47.0
+
 
 [node name="MeleeHitbox" type="Area3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, -1.0)

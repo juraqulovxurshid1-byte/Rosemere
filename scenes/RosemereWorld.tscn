@@ -9,7 +9,7 @@
 [ext_resource type="Script" path="res://scripts/campfire.gd" id="8_campfire"]
 [ext_resource type="PackedScene" path="res://scenes/TreasureChest.tscn" id="9_chest"]
 [ext_resource type="PackedScene" path="res://scenes/BossTroll.tscn" id="10_boss"]
-[ext_resource type="Texture2D" path="res://art_v2/grimdark_tree.svg" id="11_tree"]
+[ext_resource type="Texture2D" path="res://art_v2/grimdark_tree.png" id="11_tree"]
 [ext_resource type="Texture2D" path="res://art_v2/campfire_flame.png" id="12_icon"]
 [ext_resource type="Texture2D" path="res://art_v2/innkeeper_a.png" id="13_innkeeper"]
 [ext_resource type="Texture2D" path="res://art_v2/grimdark_tavern.png" id="14_tavern"]
@@ -24,22 +24,23 @@
 [ext_resource type="Texture2D" path="res://art_v2/grimdark_house.png" id="24_grimhouse2"]
 [ext_resource type="Texture2D" path="res://art_v2/grimdark_church.png" id="25_grimchurch"]
 [ext_resource type="Texture2D" path="res://art_v2/castle_silhouette.png" id="26_grimcastle"]
-[ext_resource type="Texture2D" path="res://art_v2/grimdark_torch.svg" id="27_grimtorch"]
-[ext_resource type="Texture2D" path="res://art_v2/grimdark_barrel.svg" id="28_grimbarrel"]
-[ext_resource type="Texture2D" path="res://art_v2/grimdark_signpost.svg" id="29_grimsign"]
+[ext_resource type="Texture2D" path="res://art_v2/grimdark_torch.png" id="27_grimtorch"]
+[ext_resource type="Texture2D" path="res://art_v2/grimdark_barrel.png" id="28_grimbarrel"]
+[ext_resource type="Texture2D" path="res://art_v2/grimdark_signpost.png" id="29_grimsign"]
 [ext_resource type="Texture2D" path="res://art_v2/cobblestone_ground.png" id="30_cobbletex"]
 [ext_resource type="Material" path="res://materials/cobblestone_ground_mat.tres" id="30_cobblemat"]
-[ext_resource type="Texture2D" path="res://art_v2/ground_patch_dark.svg" id="40_gpatchdark"]
-[ext_resource type="Texture2D" path="res://art_v2/ground_patch_mud.svg" id="41_gpatchmud"]
-[ext_resource type="Texture2D" path="res://art_v2/ground_tuft_grass.svg" id="42_ggrass"]
-[ext_resource type="Texture2D" path="res://art_v2/ground_crack.svg" id="43_gcrack"]
-[ext_resource type="Texture2D" path="res://art_v2/deco_fence.svg" id="44_dfence"]
-[ext_resource type="Texture2D" path="res://art_v2/deco_rock.svg" id="45_drock"]
-[ext_resource type="Texture2D" path="res://art_v2/deco_bush.svg" id="46_dbush"]
-[ext_resource type="Texture2D" path="res://art_v2/deco_dead_tree.svg" id="47_dtree"]
-[ext_resource type="Texture2D" path="res://art_v2/story_broken_cart.svg" id="48_cart"]
-[ext_resource type="Texture2D" path="res://art_v2/story_weapon_rack.svg" id="49_wrack"]
-[ext_resource type="Texture2D" path="res://art_v2/story_stockade.svg" id="50_stock"]
+[ext_resource type="Texture2D" path="res://art_v2/ground_patch_dark_soft.png" id="40_gpatchdark"]
+[ext_resource type="Texture2D" path="res://art_v2/ground_patch_mud_soft.png" id="41_gpatchmud"]
+[ext_resource type="Texture2D" path="res://art_v2/ground_tuft_grass_soft.png" id="42_ggrass"]
+[ext_resource type="Texture2D" path="res://art_v2/ground_crack_soft.png" id="43_gcrack"]
+[ext_resource type="Texture2D" path="res://art_v2/deco_fence.png" id="44_dfence"]
+[ext_resource type="Texture2D" path="res://art_v2/deco_rock.png" id="45_drock"]
+[ext_resource type="Texture2D" path="res://art_v2/deco_bush.png" id="46_dbush"]
+[ext_resource type="Texture2D" path="res://art_v2/deco_dead_tree.png" id="47_dtree"]
+[ext_resource type="Texture2D" path="res://art_v2/story_broken_cart.png" id="48_cart"]
+[ext_resource type="Texture2D" path="res://art_v2/story_weapon_rack.png" id="49_wrack"]
+[ext_resource type="Texture2D" path="res://art_v2/story_stockade.png" id="50_stock"]
+[ext_resource type="Texture2D" path="res://art_v2/grimdark_tree_test.png" id="60_treetest"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_world"]
 sky_top_color = Color(0.45, 0.48, 0.55, 1)
@@ -121,9 +122,9 @@ outline_color = Color(0, 0, 0, 1)
 
 [node name="ShadowManager" type="Node" parent="."]
 script = ExtResource("31_shadow")
-shadow_opacity = 0.3
-shadow_softness = 1.0
-shadow_scale_factor = 0.8
+shadow_opacity = 0.38
+npc_shadow_scale = 1.3
+tree_shadow_scale = 1.8
 # --- BACKGROUND CASTLE SILHOUETTE ---
 
 [node name="BackgroundCastle" type="Sprite3D" parent="."]
@@ -132,6 +133,8 @@ billboard = 2
 shaded = false
 texture_filter = 0
 modulate = Color(1, 1, 1, 0.9)
+alpha_cut = 2
+alpha_scissor_threshold = 0.12
 texture = ExtResource("26_grimcastle")
 
 [node name="BackgroundCastle2" type="Sprite3D" parent="."]
@@ -140,6 +143,8 @@ billboard = 2
 shaded = false
 texture_filter = 0
 modulate = Color(1, 1, 1, 0.7)
+alpha_cut = 2
+alpha_scissor_threshold = 0.12
 texture = ExtResource("26_grimcastle")
 
 [node name="Ground" type="StaticBody3D" parent="."]
@@ -154,119 +159,204 @@ shape = SubResource("BoxShape3D_floor")
 # --- GRIMDARK BUILDINGS ---
 
 [node name="GrimTavern" type="Sprite3D" parent="."]
-transform = Transform3D(3.5, 0, 0, 0, 3.5, 0, 0, 0, 1, 6.2, 0, -1.0)
+transform = Transform3D(4.025, 0, 0, 0, 4.025, 0, 0, 0, 4.025, 6.2, 15.4761, -1)
 billboard = 2
 shaded = true
 texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("22_grimtavern")
 
 [node name="GrimHouse1" type="Sprite3D" parent="."]
-transform = Transform3D(3.0, 0, 0, 0, 3.0, 0, 0, 0, 1, -6.6, 0, -3.6)
+transform = Transform3D(3.45, 0, 0, 0, 3.45, 0, 0, 0, 3.45, -6.6, 12.8685, -3.6)
 billboard = 2
 shaded = true
 texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("23_grimhouse1")
 
 [node name="GrimHouse2" type="Sprite3D" parent="."]
-transform = Transform3D(3.0, 0, 0, 0, 3.0, 0, 0, 0, 1, 9.5, 0, 2.1)
+transform = Transform3D(3.45, 0, 0, 0, 3.45, 0, 0, 0, 3.45, 9.5, 12.8685, 2.1)
 billboard = 2
 shaded = true
 texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("24_grimhouse2")
 
 [node name="GrimHouse3" type="Sprite3D" parent="."]
-transform = Transform3D(3.0, 0, 0, 0, 3.0, 0, 0, 0, 1, 6.8, 0, 6.2)
+transform = Transform3D(3.45, 0, 0, 0, 3.45, 0, 0, 0, 3.45, 6.8, 12.8685, 6.2)
 billboard = 2
 shaded = true
 texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("23_grimhouse1")
 
 [node name="GrimHouse4" type="Sprite3D" parent="."]
-transform = Transform3D(3.2, 0, 0, 0, 3.2, 0, 0, 0, 1, 9.9, 0, -5.5)
+transform = Transform3D(3.68, 0, 0, 0, 3.68, 0, 0, 0, 3.68, 9.9, 13.7264, -5.5)
 billboard = 2
 shaded = true
 texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("24_grimhouse2")
 
 [node name="GrimHouse5" type="Sprite3D" parent="."]
-transform = Transform3D(3.0, 0, 0, 0, 3.0, 0, 0, 0, 1, -6.8, 0, 5.8)
+transform = Transform3D(3.45, 0, 0, 0, 3.45, 0, 0, 0, 3.45, -6.8, 12.8685, 5.8)
 billboard = 2
 shaded = true
 texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("23_grimhouse1")
 
 [node name="GrimChurch" type="Sprite3D" parent="."]
-transform = Transform3D(3.0, 0, 0, 0, 4.5, 0, 0, 0, 1, -8.8, 0, 1.6)
+transform = Transform3D(3.45, 0, 0, 0, 5.175, 0, 0, 0, 3.45, -8.8, 19.6909, 1.6)
 billboard = 2
 shaded = true
 texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("25_grimchurch")
 
 [node name="GrimHouse6" type="Sprite3D" parent="."]
-transform = Transform3D(2.8, 0, 0, 0, 2.8, 0, 0, 0, 1, -2.8, 0, 7.0)
+transform = Transform3D(3.22, 0, 0, 0, 3.22, 0, 0, 0, 3.22, -2.8, 12.0106, 7)
 billboard = 2
 shaded = true
 texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("23_grimhouse1")
 
 [node name="GrimHouse7" type="Sprite3D" parent="."]
-transform = Transform3D(2.8, 0, 0, 0, 2.8, 0, 0, 0, 1, 2.9, 0, 6.9)
+transform = Transform3D(3.22, 0, 0, 0, 3.22, 0, 0, 0, 3.22, 2.9, 12.0106, 6.9)
 billboard = 2
 shaded = true
 texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("23_grimhouse1")
 # --- PROPS ---
 
 [node name="Props" type="Node3D" parent="."]
 
 [node name="Torch1" type="Sprite3D" parent="Props"]
-transform = Transform3D(0.6, 0, 0, 0, 0.8, 0, 0, 0, 1, -2, 0.088, 0.5)
+transform = Transform3D(0.6, 0, 0, 0, 0.8, 0, 0, 0, 0.6, -3.8, 0.512, -0.8)
 billboard = 2
 shaded = true
 texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("27_grimtorch")
 
 [node name="Torch2" type="Sprite3D" parent="Props"]
-transform = Transform3D(0.6, 0, 0, 0, 0.8, 0, 0, 0, 1, 2, 0.088, -0.5)
+transform = Transform3D(0.6, 0, 0, 0, 0.8, 0, 0, 0, 0.6, 3.7, 0.512, -1.5)
 billboard = 2
 shaded = true
 texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("27_grimtorch")
 
 [node name="Torch3" type="Sprite3D" parent="Props"]
-transform = Transform3D(0.6, 0, 0, 0, 0.8, 0, 0, 0, 1, -3, 0.088, 3)
+transform = Transform3D(0.6, 0, 0, 0, 0.8, 0, 0, 0, 0.6, -5.2, 0.512, 2.7)
 billboard = 2
 shaded = true
 texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("27_grimtorch")
 
 [node name="Barrel1" type="Sprite3D" parent="Props"]
-transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 1, 0, 0.205, 3)
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 2.8, 1.2575, -1.4)
 billboard = 2
 shaded = true
 texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("28_grimbarrel")
 
 [node name="Barrel2" type="Sprite3D" parent="Props"]
-transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 1, 5, 0.205, 2)
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 3.7, 1.2575, -0.4)
 billboard = 2
 shaded = true
 texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("28_grimbarrel")
 
 [node name="Signpost" type="Sprite3D" parent="Props"]
-transform = Transform3D(1.0, 0, 0, 0, 1.2, 0, 0, 0, 1, 0, 1.200, -1)
+transform = Transform3D(1, 0, 0, 0, 1.2, 0, 0, 0, 1, 0, 6.144, -4)
 billboard = 2
 shaded = true
 texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("29_grimsign")
+
+[node name="Barrel3" type="Sprite3D" parent="Props"]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, -1.3, 1.2575, -2)
+billboard = 2
+shaded = true
+texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
+texture = ExtResource("28_grimbarrel")
+
+[node name="Barrel4" type="Sprite3D" parent="Props"]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 4.5, 1.2575, -2.2)
+billboard = 2
+shaded = true
+texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
+texture = ExtResource("28_grimbarrel")
+
+[node name="FenceMarket1" type="Sprite3D" parent="Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.8, 3.75, -2.8)
+billboard = 2
+shaded = true
+texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
+texture = ExtResource("44_dfence")
+
+[node name="FenceMarket2" type="Sprite3D" parent="Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 3.75, -2.9)
+billboard = 2
+shaded = true
+texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
+texture = ExtResource("44_dfence")
 # --- GROUND DETAILS (dirt patches, cracks, grass tufts) ---
 
 [node name="GroundDetails" type="Node3D" parent="."]
 # --- WARM ACCENT LIGHTS (torches, windows) ---
 
 [node name="TorchGlow1" type="OmniLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 2.0, 0.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.8, 2.0, -0.8)
 light_color = Color(1.0, 0.65, 0.2, 1)
 light_energy = 2.0
 light_indirect_energy = 1.2
@@ -274,7 +364,7 @@ omni_range = 5.5
 shadow_enabled = false
 
 [node name="TorchGlow2" type="OmniLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 2.0, -0.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.7, 2.0, -1.5)
 light_color = Color(1.0, 0.65, 0.2, 1)
 light_energy = 2.0
 light_indirect_energy = 1.2
@@ -282,7 +372,7 @@ omni_range = 5.5
 shadow_enabled = false
 
 [node name="TorchGlow3" type="OmniLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 1.8, 3)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.2, 1.8, 2.7)
 light_color = Color(1.0, 0.6, 0.25, 1)
 light_energy = 1.5
 light_indirect_energy = 0.8
@@ -290,7 +380,7 @@ omni_range = 5.0
 shadow_enabled = false
 
 [node name="TavernWarmGlow" type="OmniLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, 3.0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.2, 3.0, -1.0)
 light_color = Color(1.0, 0.8, 0.35, 1)
 light_energy = 2.5
 light_indirect_energy = 1.5
@@ -317,7 +407,7 @@ shadow_enabled = false
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 5)
 
 [node name="BlacksmithNPC" type="StaticBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0, 1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.2, 0, -1.1)
 script = ExtResource("2_groq")
 npc_name = "Gareth the Blacksmith"
 npc_persona = "You are Gareth, an intense, deep-voiced Viking warrior blacksmith of Rosemere village. You are serious, fierce, and value battle strength above all else. You craft heavy dwarven battleaxes and Witcher steel. Speak succinctly like a hardened Norse chieftain."
@@ -331,6 +421,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.69, 0)
 billboard = 2
 shaded = true
 texture_filter = 0
+alpha_cut = 2
+alpha_scissor_threshold = 0.12
 texture = ExtResource("3_blacksmith")
 
 [node name="Nameplate" type="Label3D" parent="BlacksmithNPC"]
@@ -342,7 +434,7 @@ font_size = 40
 outline_size = 12
 
 [node name="InnkeeperNPC" type="StaticBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.2, 0, -0.8)
 script = ExtResource("2_groq")
 npc_name = "Elora the Innkeeper"
 npc_persona = "You are Elora, a mysterious, fast-talking witch who disguises herself as the tavern innkeeper of Rosemere. You brew mystical health elixirs and speak in quick, cryptic, enchanting riddles about the fate of the realm and Grok the Troll."
@@ -356,6 +448,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.59, 0)
 billboard = 2
 shaded = true
 texture_filter = 0
+alpha_cut = 2
+alpha_scissor_threshold = 0.12
 texture = ExtResource("13_innkeeper")
 
 [node name="Nameplate" type="Label3D" parent="InnkeeperNPC"]
@@ -369,9 +463,9 @@ outline_size = 12
 [node name="Villagers" type="Node3D" parent="."]
 
 [node name="OldManThomas" parent="Villagers" instance=ExtResource("17_villager")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.8, 0, 1.8)
 villager_name = "Old Man Thomas"
-wander_radius = 6.0
+wander_radius = 3.5
 move_speed = 1.5
 pause_min = 3.0
 pause_max = 7.0
@@ -384,9 +478,9 @@ dialogue_lines = [
 ]
 
 [node name="Martha" parent="Villagers" instance=ExtResource("17_villager")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, 6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.8, 0, 4.2)
 villager_name = "Martha"
-wander_radius = 5.0
+wander_radius = 3.5
 move_speed = 1.8
 pause_min = 2.0
 pause_max = 6.0
@@ -399,9 +493,9 @@ dialogue_lines = [
 ]
 
 [node name="MerchantLeo" parent="Villagers" instance=ExtResource("17_villager")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 0, -1.2)
 villager_name = "Merchant Leo"
-wander_radius = 7.0
+wander_radius = 3.5
 move_speed = 2.2
 pause_min = 1.5
 pause_max = 4.0
@@ -417,9 +511,9 @@ dialogue_lines = [
 texture = ExtResource("19_merchant")
 
 [node name="YoungWill" parent="Villagers" instance=ExtResource("17_villager")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 0, 10)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 0, 5.0)
 villager_name = "Young Will"
-wander_radius = 8.0
+wander_radius = 3.5
 move_speed = 2.5
 pause_min = 1.0
 pause_max = 3.0
@@ -444,11 +538,14 @@ shadow_enabled = true
 omni_range = 14.0
 
 [node name="FireSprite" type="Sprite3D" parent="Campfire"]
-transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 1, 0, 1.080, 0)
+transform = Transform3D(1.6, 0, 0, 0, 1.6, 0, 0, 0, 1, 0, 0.864, 0)
 billboard = 2
+shaded = false
 texture_filter = 0
+alpha_cut = 2
+alpha_scissor_threshold = 0.05
 texture = ExtResource("12_icon")
-modulate = Color(1, 0.7, 0.3, 1)
+modulate = Color(1, 0.82, 0.55, 1)
 
 [node name="HealArea" type="Area3D" parent="Campfire"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
@@ -497,392 +594,609 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -50)
 [node name="Trees" type="Node3D" parent="."]
 
 [node name="Tree1" type="Sprite3D" parent="Trees"]
-transform = Transform3D(2, 0, 0, 0, 2.8, 0, 0, 0, 1, -12, 3.668, -8)
+transform = Transform3D(1.5, 0, 0, 0, 2.1, 0, 0, 0, 1.5, -12, 9.345, -8)
 billboard = 2
 shaded = true
 texture_filter = 0
 modulate = Color(1, 1, 1, 0.85)
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("11_tree")
 
 [node name="Tree2" type="Sprite3D" parent="Trees"]
-transform = Transform3D(2.2, 0, 0, 0, 3, 0, 0, 0, 1, 14, 3.930, -12)
+transform = Transform3D(1.65, 0, 0, 0, 2.25, 0, 0, 0, 1.65, 14, 10.0125, -12)
 billboard = 2
 shaded = true
 texture_filter = 0
 modulate = Color(1, 1, 1, 0.85)
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("11_tree")
 
 [node name="Tree3" type="Sprite3D" parent="Trees"]
-transform = Transform3D(1.8, 0, 0, 0, 2.5, 0, 0, 0, 1, 8, 3.275, 10)
+transform = Transform3D(1.35, 0, 0, 0, 1.875, 0, 0, 0, 1.35, 8, 8.34375, 10)
 billboard = 2
 shaded = true
 texture_filter = 0
 modulate = Color(1, 1, 1, 0.8)
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("11_tree")
 
 [node name="Tree4" type="Sprite3D" parent="Trees"]
-transform = Transform3D(2.0, 0, 0, 0, 2.8, 0, 0, 0, 1, -14, 3.668, 12)
+transform = Transform3D(1.5, 0, 0, 0, 2.1, 0, 0, 0, 1.5, -14, 9.345, 12)
 billboard = 2
 shaded = true
 texture_filter = 0
 modulate = Color(1, 1, 1, 0.85)
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("11_tree")
 
 [node name="Tree5" type="Sprite3D" parent="Trees"]
-transform = Transform3D(2.2, 0, 0, 0, 3.0, 0, 0, 0, 1, 15, 3.930, 8)
+transform = Transform3D(1.65, 0, 0, 0, 2.25, 0, 0, 0, 1.65, 15, 10.0125, 8)
 billboard = 2
 shaded = true
 texture_filter = 0
 modulate = Color(1, 1, 1, 0.8)
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("11_tree")
 
 [node name="Tree6" type="Sprite3D" parent="Trees"]
-transform = Transform3D(1.8, 0, 0, 0, 2.5, 0, 0, 0, 1, -13, 3.275, -12)
+transform = Transform3D(1.35, 0, 0, 0, 1.875, 0, 0, 0, 1.35, -13, 8.34375, -12)
 billboard = 2
 shaded = true
 texture_filter = 0
 modulate = Color(1, 1, 1, 0.85)
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("11_tree")
 
 [node name="Tree7" type="Sprite3D" parent="Trees"]
-transform = Transform3D(2.0, 0, 0, 0, 2.8, 0, 0, 0, 1, 16, 3.668, -5)
+transform = Transform3D(1.5, 0, 0, 0, 2.1, 0, 0, 0, 1.5, 16, 9.345, -5)
 billboard = 2
 shaded = true
 texture_filter = 0
 modulate = Color(1, 1, 1, 0.8)
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("11_tree")
 
 [node name="Tree8" type="Sprite3D" parent="Trees"]
-transform = Transform3D(1.6, 0, 0, 0, 2.2, 0, 0, 0, 1, -11, 2.882, 3)
+transform = Transform3D(1.2, 0, 0, 0, 1.65, 0, 0, 0, 1.2, -11, 7.3425, 3)
 billboard = 2
 shaded = true
 texture_filter = 0
 modulate = Color(1, 1, 1, 0.7)
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("11_tree")
 
-[node name="DarkPatch1" type="Sprite3D" parent="GroundDetails"]
-transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 1, -4, 0.03, 0)
-billboard = 0
-texture_filter = 0
-texture = ExtResource("40_gpatchdark")
+[node name="DarkPatch1" type="Decal" parent="GroundDetails"]
+transform = Transform3D(0.939373, 0, -0.342898, 0, 1, 0, 0.342898, 0, 0.939373, -4, 0.35, 0)
+size = Vector3(5.12, 0.6, 5.12)
+texture_albedo = ExtResource("40_gpatchdark")
+albedo_mix = 0.85
+modulate = Color(1, 1, 1, 1)
+upper_fade = 0.0
+lower_fade = 0.0
+normal_fade = 0.0
+distance_fade_enabled = true
+distance_fade_begin = 20.0
+distance_fade_length = 15.0
+cull_mask = 1
 
-[node name="DarkPatch2" type="Sprite3D" parent="GroundDetails"]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1, 5, 0.03, 2)
-billboard = 0
-texture_filter = 0
-texture = ExtResource("40_gpatchdark")
+[node name="DarkPatch2" type="Decal" parent="GroundDetails"]
+transform = Transform3D(0.825336, 0, 0.564642, 0, 1, 0, -0.564642, 0, 0.825336, 5, 0.35, 2)
+size = Vector3(3.84, 0.6, 3.84)
+texture_albedo = ExtResource("40_gpatchdark")
+albedo_mix = 0.85
+modulate = Color(1, 1, 1, 1)
+upper_fade = 0.0
+lower_fade = 0.0
+normal_fade = 0.0
+distance_fade_enabled = true
+distance_fade_begin = 20.0
+distance_fade_length = 15.0
+cull_mask = 1
 
-[node name="MudPatch1" type="Sprite3D" parent="GroundDetails"]
-transform = Transform3D(1.8, 0, 0, 0, 1.8, 0, 0, 0, 1, -10, 0.03, 6)
-billboard = 0
-texture_filter = 0
-texture = ExtResource("41_gpatchmud")
+[node name="MudPatch1" type="Decal" parent="GroundDetails"]
+transform = Transform3D(0.968912, 0, 0.247404, 0, 1, 0, -0.247404, 0, 0.968912, -10, 0.35, 6)
+size = Vector3(4.61, 0.6, 4.61)
+texture_albedo = ExtResource("41_gpatchmud")
+albedo_mix = 0.85
+modulate = Color(1, 1, 1, 1)
+upper_fade = 0.0
+lower_fade = 0.0
+normal_fade = 0.0
+distance_fade_enabled = true
+distance_fade_begin = 20.0
+distance_fade_length = 15.0
+cull_mask = 1
 
-[node name="MudPatch2" type="Sprite3D" parent="GroundDetails"]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1, 11, 0.03, 2)
-billboard = 0
-texture_filter = 0
-texture = ExtResource("41_gpatchmud")
+[node name="MudPatch2" type="Decal" parent="GroundDetails"]
+transform = Transform3D(0.764842, 0, -0.644218, 0, 1, 0, 0.644218, 0, 0.764842, 11, 0.35, 2)
+size = Vector3(3.84, 0.6, 3.84)
+texture_albedo = ExtResource("41_gpatchmud")
+albedo_mix = 0.85
+modulate = Color(1, 1, 1, 1)
+upper_fade = 0.0
+lower_fade = 0.0
+normal_fade = 0.0
+distance_fade_enabled = true
+distance_fade_begin = 20.0
+distance_fade_length = 15.0
+cull_mask = 1
 
-[node name="Crack1" type="Sprite3D" parent="GroundDetails"]
-transform = Transform3D(1.2, 0, 0, 0, 1.2, 0, 0, 0, 1, -1, 0.03, 1)
-billboard = 0
-texture_filter = 0
-texture = ExtResource("43_gcrack")
+[node name="Crack1" type="Decal" parent="GroundDetails"]
+transform = Transform3D(0.988771, 0, -0.149438, 0, 1, 0, 0.149438, 0, 0.988771, -1, 0.35, 1)
+size = Vector3(3.07, 0.6, 3.07)
+texture_albedo = ExtResource("43_gcrack")
+albedo_mix = 0.85
+modulate = Color(1, 1, 1, 1)
+upper_fade = 0.0
+lower_fade = 0.0
+normal_fade = 0.0
+distance_fade_enabled = true
+distance_fade_begin = 20.0
+distance_fade_length = 15.0
+cull_mask = 1
 
-[node name="Crack2" type="Sprite3D" parent="GroundDetails"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0.03, -1)
-billboard = 0
-texture_filter = 0
-texture = ExtResource("43_gcrack")
+[node name="Crack2" type="Decal" parent="GroundDetails"]
+transform = Transform3D(0.696707, 0, 0.717356, 0, 1, 0, -0.717356, 0, 0.696707, 4, 0.35, -1)
+size = Vector3(2.56, 0.6, 2.56)
+texture_albedo = ExtResource("43_gcrack")
+albedo_mix = 0.85
+modulate = Color(1, 1, 1, 1)
+upper_fade = 0.0
+lower_fade = 0.0
+normal_fade = 0.0
+distance_fade_enabled = true
+distance_fade_begin = 20.0
+distance_fade_length = 15.0
+cull_mask = 1
 
-[node name="Grass1" type="Sprite3D" parent="GroundDetails"]
-transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, -5, 0.03, 2)
-billboard = 0
-texture_filter = 0
-texture = ExtResource("42_ggrass")
+[node name="Grass1" type="Decal" parent="GroundDetails"]
+transform = Transform3D(0.955336, 0, -0.29552, 0, 1, 0, 0.29552, 0, 0.955336, -5, 0.35, 2)
+size = Vector3(2.56, 0.6, 2.56)
+texture_albedo = ExtResource("42_ggrass")
+albedo_mix = 0.85
+modulate = Color(1, 1, 1, 1)
+upper_fade = 0.0
+lower_fade = 0.0
+normal_fade = 0.0
+distance_fade_enabled = true
+distance_fade_begin = 20.0
+distance_fade_length = 15.0
+cull_mask = 1
 
-[node name="Grass2" type="Sprite3D" parent="GroundDetails"]
-transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 1, 7, 0.03, 5)
-billboard = 0
-texture_filter = 0
-texture = ExtResource("42_ggrass")
+[node name="Grass2" type="Decal" parent="GroundDetails"]
+transform = Transform3D(0.62161, 0, 0.783327, 0, 1, 0, -0.783327, 0, 0.62161, 7, 0.35, 5)
+size = Vector3(2.05, 0.6, 2.05)
+texture_albedo = ExtResource("42_ggrass")
+albedo_mix = 0.85
+modulate = Color(1, 1, 1, 1)
+upper_fade = 0.0
+lower_fade = 0.0
+normal_fade = 0.0
+distance_fade_enabled = true
+distance_fade_begin = 20.0
+distance_fade_length = 15.0
+cull_mask = 1
 
-[node name="Grass3" type="Sprite3D" parent="GroundDetails"]
-transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 1, -3, 0.03, -3)
-billboard = 0
-texture_filter = 0
-texture = ExtResource("42_ggrass")
+[node name="Grass3" type="Decal" parent="GroundDetails"]
+transform = Transform3D(0.453596, 0, -0.891207, 0, 1, 0, 0.891207, 0, 0.453596, -3, 0.35, -3)
+size = Vector3(2.05, 0.6, 2.05)
+texture_albedo = ExtResource("42_ggrass")
+albedo_mix = 0.85
+modulate = Color(1, 1, 1, 1)
+upper_fade = 0.0
+lower_fade = 0.0
+normal_fade = 0.0
+distance_fade_enabled = true
+distance_fade_begin = 20.0
+distance_fade_length = 15.0
+cull_mask = 1
 
-[node name="DarkPatch3" type="Sprite3D" parent="GroundDetails"]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1, 11, 0.03, 2)
-billboard = 0
-texture_filter = 0
-texture = ExtResource("40_gpatchdark")
+[node name="DarkPatch3" type="Decal" parent="GroundDetails"]
+transform = Transform3D(0.62161, 0, -0.783327, 0, 1, 0, 0.783327, 0, 0.62161, 11, 0.35, 2)
+size = Vector3(3.84, 0.6, 3.84)
+texture_albedo = ExtResource("40_gpatchdark")
+albedo_mix = 0.85
+modulate = Color(1, 1, 1, 1)
+upper_fade = 0.0
+lower_fade = 0.0
+normal_fade = 0.0
+distance_fade_enabled = true
+distance_fade_begin = 20.0
+distance_fade_length = 15.0
+cull_mask = 1
 
-[node name="MudPatch3" type="Sprite3D" parent="GroundDetails"]
-transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 1, -11, 0.03, 12)
-billboard = 0
-texture_filter = 0
-texture = ExtResource("41_gpatchmud")
+[node name="MudPatch3" type="Decal" parent="GroundDetails"]
+transform = Transform3D(0.877583, 0, 0.479426, 0, 1, 0, -0.479426, 0, 0.877583, -11, 0.35, 12)
+size = Vector3(5.12, 0.6, 5.12)
+texture_albedo = ExtResource("41_gpatchmud")
+albedo_mix = 0.85
+modulate = Color(1, 1, 1, 1)
+upper_fade = 0.0
+lower_fade = 0.0
+normal_fade = 0.0
+distance_fade_enabled = true
+distance_fade_begin = 20.0
+distance_fade_length = 15.0
+cull_mask = 1
 
-[node name="Crack3" type="Sprite3D" parent="GroundDetails"]
-transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 1, 1, 0.03, -2)
-billboard = 0
-texture_filter = 0
-texture = ExtResource("43_gcrack")
+[node name="Crack3" type="Decal" parent="GroundDetails"]
+transform = Transform3D(0.900447, 0, -0.434966, 0, 1, 0, 0.434966, 0, 0.900447, 1, 0.35, -2)
+size = Vector3(2.05, 0.6, 2.05)
+texture_albedo = ExtResource("43_gcrack")
+albedo_mix = 0.85
+modulate = Color(1, 1, 1, 1)
+upper_fade = 0.0
+lower_fade = 0.0
+normal_fade = 0.0
+distance_fade_enabled = true
+distance_fade_begin = 20.0
+distance_fade_length = 15.0
+cull_mask = 1
+
 # --- FOREGROUND DEPTH (closer to camera, frames the view) ---
 
 [node name="Foreground" type="Node3D" parent="."]
 
 [node name="FenceTop1" type="Sprite3D" parent="Foreground"]
-transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 1, -16, 1.200, 18)
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, -16, 7.5, 18)
 billboard = 2
 shaded = true
 texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("44_dfence")
 
 [node name="FenceTop2" type="Sprite3D" parent="Foreground"]
-transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 1, -3, 1.200, 18)
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, -3, 7.5, 18)
 billboard = 2
 shaded = true
 texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("44_dfence")
 
 [node name="FenceTop3" type="Sprite3D" parent="Foreground"]
-transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 1, 10, 1.200, 18)
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 10, 7.5, 18)
 billboard = 2
 shaded = true
 texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("44_dfence")
 
 [node name="ForegroundRock1" type="Sprite3D" parent="Foreground"]
-transform = Transform3D(3, 0, 0, 0, 2, 0, 0, 0, 1, -18, 0.460, 14)
+transform = Transform3D(3, 0, 0, 0, 2, 0, 0, 0, 3, -18, 2.77, 14)
 billboard = 2
 shaded = true
 texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("45_drock")
 
 [node name="ForegroundRock2" type="Sprite3D" parent="Foreground"]
-transform = Transform3D(2.5, 0, 0, 0, 1.5, 0, 0, 0, 1, 16, 0.345, 15)
+transform = Transform3D(2.5, 0, 0, 0, 1.5, 0, 0, 0, 2.5, 16, 2.0775, 15)
 billboard = 2
 shaded = true
 texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("45_drock")
 
 [node name="ForegroundBush1" type="Sprite3D" parent="Foreground"]
-transform = Transform3D(3, 0, 0, 0, 2.5, 0, 0, 0, 1, -16, 1.000, 14)
+transform = Transform3D(2.25, 0, 0, 0, 1.875, 0, 0, 0, 2.25, -16, 4.6875, 14)
 billboard = 2
 shaded = true
 texture_filter = 0
 modulate = Color(0.4, 0.5, 0.35, 0.85)
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("46_dbush")
 
 [node name="ForegroundBush2" type="Sprite3D" parent="Foreground"]
-transform = Transform3D(2.5, 0, 0, 0, 2, 0, 0, 0, 1, 14, 0.800, 14)
+transform = Transform3D(1.875, 0, 0, 0, 1.5, 0, 0, 0, 1.875, 14, 3.75, 14)
 billboard = 2
 shaded = true
 texture_filter = 0
 modulate = Color(0.35, 0.45, 0.3, 0.8)
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("46_dbush")
 # --- MIDGROUND DEPTH (village edges) ---
 
 [node name="Midground" type="Node3D" parent="."]
 
 [node name="FenceLeft1" type="Sprite3D" parent="Midground"]
-transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 1, -18, 1.200, 4)
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, -18, 7.5, 4)
 billboard = 2
 shaded = true
 texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("44_dfence")
 
 [node name="FenceLeft2" type="Sprite3D" parent="Midground"]
-transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 1, -18, 1.200, -2)
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, -18, 7.5, -2)
 billboard = 2
 shaded = true
 texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("44_dfence")
 
 [node name="FenceRight1" type="Sprite3D" parent="Midground"]
-transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 1, 18, 1.200, 0)
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 18, 7.5, 0)
 billboard = 2
 shaded = true
 texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("44_dfence")
 
 [node name="MidRock1" type="Sprite3D" parent="Midground"]
-transform = Transform3D(2, 0, 0, 0, 1.5, 0, 0, 0, 1, -14, 0.345, -6)
+transform = Transform3D(2, 0, 0, 0, 1.5, 0, 0, 0, 2, -14, 2.0775, -6)
 billboard = 2
 shaded = true
 texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("45_drock")
 
 [node name="MidBush1" type="Sprite3D" parent="Midground"]
-transform = Transform3D(2, 0, 0, 0, 1.8, 0, 0, 0, 1, 14, 0.720, -6)
+transform = Transform3D(1.5, 0, 0, 0, 1.35, 0, 0, 0, 1.5, 14, 3.375, -6)
 billboard = 2
 shaded = true
 texture_filter = 0
 modulate = Color(0.4, 0.5, 0.35, 0.8)
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("46_dbush")
 
 [node name="MidBush2" type="Sprite3D" parent="Midground"]
-transform = Transform3D(2.2, 0, 0, 0, 2, 0, 0, 0, 1, -14, 0.800, -12)
+transform = Transform3D(1.65, 0, 0, 0, 1.5, 0, 0, 0, 1.65, -14, 3.75, -12)
 billboard = 2
 shaded = true
 texture_filter = 0
 modulate = Color(0.35, 0.45, 0.3, 0.75)
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("46_dbush")
 
 [node name="MidRock2" type="Sprite3D" parent="Midground"]
-transform = Transform3D(1.8, 0, 0, 0, 1.2, 0, 0, 0, 1, 16, 0.276, -8)
+transform = Transform3D(1.8, 0, 0, 0, 1.2, 0, 0, 0, 1.8, 16, 1.662, -8)
 billboard = 2
 shaded = true
 texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("45_drock")
 
 # --- FOREGROUND ADDITIONS (more framing near camera) ---
 [node name="ForegroundFence4" type="Sprite3D" parent="Foreground"]
-transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 1, 0, 1.200, 18)
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 7.5, 18)
 billboard = 2
 shaded = true
 texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("44_dfence")
 
 [node name="ForegroundDeadTree1" type="Sprite3D" parent="Foreground"]
-transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 1, -20, 2.280, 10)
+transform = Transform3D(2.25, 0, 0, 0, 2.25, 0, 0, 0, 2.25, -20, 10.575, 10)
 billboard = 2
 shaded = true
 texture_filter = 0
 modulate = Color(0.3, 0.25, 0.2, 0.7)
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("47_dtree")
 
 [node name="ForegroundDeadTree2" type="Sprite3D" parent="Foreground"]
-transform = Transform3D(2.5, 0, 0, 0, 2.5, 0, 0, 0, 1, 18, 1.900, 10)
+transform = Transform3D(1.875, 0, 0, 0, 1.875, 0, 0, 0, 1.875, 18, 8.8125, 10)
 billboard = 2
 shaded = true
 texture_filter = 0
 modulate = Color(0.3, 0.25, 0.2, 0.65)
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("47_dtree")
 
 [node name="ForegroundRock3" type="Sprite3D" parent="Foreground"]
-transform = Transform3D(1.5, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.230, 16)
+transform = Transform3D(1.5, 0, 0, 0, 1, 0, 0, 0, 1.5, -5, 1.385, 16)
 billboard = 2
 shaded = true
 texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("45_drock")
 
 [node name="ForegroundBush3" type="Sprite3D" parent="Foreground"]
-transform = Transform3D(2, 0, 0, 0, 1.5, 0, 0, 0, 1, 6, 0.600, 15)
+transform = Transform3D(1.5, 0, 0, 0, 1.125, 0, 0, 0, 1.5, 6, 2.8125, 15)
 billboard = 2
 shaded = true
 texture_filter = 0
 modulate = Color(0.4, 0.5, 0.35, 0.7)
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("46_dbush")
 
 # --- MIDGROUND ADDITIONS (clutter around village) ---
 [node name="MidBush3" type="Sprite3D" parent="Midground"]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1, 11, 0.600, 1)
+transform = Transform3D(1.125, 0, 0, 0, 1.125, 0, 0, 0, 1.125, 11, 2.8125, 1)
 billboard = 2
 shaded = true
 texture_filter = 0
 modulate = Color(0.35, 0.45, 0.3, 0.75)
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("46_dbush")
 
 [node name="MidBush4" type="Sprite3D" parent="Midground"]
-transform = Transform3D(1.8, 0, 0, 0, 1.5, 0, 0, 0, 1, -11, 0.600, -2)
+transform = Transform3D(1.35, 0, 0, 0, 1.125, 0, 0, 0, 1.35, -11, 2.8125, -2)
 billboard = 2
 shaded = true
 texture_filter = 0
 modulate = Color(0.4, 0.5, 0.35, 0.7)
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("46_dbush")
 
 [node name="MidRock3" type="Sprite3D" parent="Midground"]
-transform = Transform3D(1.2, 0, 0, 0, 0.8, 0, 0, 0, 1, -7, 0.184, -1)
+transform = Transform3D(1.2, 0, 0, 0, 0.8, 0, 0, 0, 1.2, -7, 1.108, -1)
 billboard = 2
 shaded = true
 texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("45_drock")
 
 # --- BACKGROUND DEPTH (silhouettes along north road and village edges) ---
 [node name="BackgroundDepth" type="Node3D" parent="."]
 
 [node name="BgDeadTree1" type="Sprite3D" parent="BackgroundDepth"]
-transform = Transform3D(3.5, 0, 0, 0, 3.5, 0, 0, 0, 1, -12, 2.660, -16)
+transform = Transform3D(2.625, 0, 0, 0, 2.625, 0, 0, 0, 2.625, -12, 12.3375, -16)
 billboard = 2
 shaded = true
 texture_filter = 0
 modulate = Color(0.2, 0.18, 0.15, 0.5)
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("47_dtree")
 
 [node name="BgDeadTree2" type="Sprite3D" parent="BackgroundDepth"]
-transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 1, 8, 2.280, -16)
+transform = Transform3D(2.25, 0, 0, 0, 2.25, 0, 0, 0, 2.25, 8, 10.575, -16)
 billboard = 2
 shaded = true
 texture_filter = 0
 modulate = Color(0.2, 0.18, 0.15, 0.5)
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("47_dtree")
 
 [node name="BgDeadTree3" type="Sprite3D" parent="BackgroundDepth"]
-transform = Transform3D(4, 0, 0, 0, 4, 0, 0, 0, 1, -16, 3.040, -22)
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, -16, 14.1, -22)
 billboard = 2
 shaded = true
 texture_filter = 0
 modulate = Color(0.2, 0.18, 0.15, 0.4)
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("47_dtree")
 
 [node name="BgDeadTree4" type="Sprite3D" parent="BackgroundDepth"]
-transform = Transform3D(3.5, 0, 0, 0, 3.5, 0, 0, 0, 1, 12, 2.660, -25)
+transform = Transform3D(2.625, 0, 0, 0, 2.625, 0, 0, 0, 2.625, 12, 12.3375, -25)
 billboard = 2
 shaded = true
 texture_filter = 0
 modulate = Color(0.2, 0.18, 0.15, 0.4)
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("47_dtree")
 
 [node name="BgDeadTree5" type="Sprite3D" parent="BackgroundDepth"]
-transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 1, 0, 3.800, -40)
+transform = Transform3D(3.75, 0, 0, 0, 3.75, 0, 0, 0, 3.75, 0, 17.625, -40)
 billboard = 2
 shaded = true
 texture_filter = 0
 modulate = Color(0.18, 0.16, 0.13, 0.35)
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("47_dtree")
 
 [node name="BgBush1" type="Sprite3D" parent="BackgroundDepth"]
-transform = Transform3D(2.5, 0, 0, 0, 2, 0, 0, 0, 1, -15, 0.800, -14)
+transform = Transform3D(1.875, 0, 0, 0, 1.5, 0, 0, 0, 1.875, -15, 3.75, -14)
 billboard = 2
 shaded = true
 texture_filter = 0
 modulate = Color(0.25, 0.35, 0.2, 0.4)
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("46_dbush")
 
 [node name="BgBush2" type="Sprite3D" parent="BackgroundDepth"]
-transform = Transform3D(2, 0, 0, 0, 1.5, 0, 0, 0, 1, 10, 0.600, -20)
+transform = Transform3D(1.5, 0, 0, 0, 1.125, 0, 0, 0, 1.5, 10, 2.8125, -20)
 billboard = 2
 shaded = true
 texture_filter = 0
 modulate = Color(0.25, 0.35, 0.2, 0.35)
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("46_dbush")
 
 # --- ENVIRONMENTAL STORYTELLING ---
 # Signs of daily life: weapons ready for defence
 [node name="StoryWeaponRack" type="Sprite3D" parent="."]
-transform = Transform3D(1.2, 0, 0, 0, 1.2, 0, 0, 0, 1, -3, 0.372, 2)
+transform = Transform3D(1.2, 0, 0, 0, 1.2, 0, 0, 0, 1.2, -2.9, 2.262, -1.2)
 billboard = 2
 shaded = true
 texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("49_wrack")
 
 # Signs of danger: broken cart left on roadside after bandit attack
 [node name="StoryBrokenCart" type="Sprite3D" parent="."]
-transform = Transform3D(1.5, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0.340, -3)
+transform = Transform3D(1.5, 0, 0, 0, 1, 0, 0, 0, 1.5, 1.2, 2.08, -2.4)
 billboard = 2
 shaded = true
 texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("48_cart")
 
 # Signs of danger: stockade for discipline
 [node name="StoryStockade" type="Sprite3D" parent="."]
-transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 1, -10, 0.248, -1)
+transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, -7, 1.516, -0.8)
 billboard = 2
 shaded = true
 texture_filter = 0
+alpha_cut = 1
+alpha_scissor_threshold = 0.25
+cast_shadow = 2
 texture = ExtResource("50_stock")

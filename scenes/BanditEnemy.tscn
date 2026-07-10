@@ -25,6 +25,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.73, 0)
 billboard = 2
 shaded = true
 texture_filter = 0
+alpha_cut = 2
+alpha_scissor_threshold = 0.12
 texture = ExtResource("2_icon")
 
 [node name="AggroArea" type="Area3D" parent="."]
