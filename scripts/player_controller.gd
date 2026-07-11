@@ -10,6 +10,15 @@ class_name PlayerController
 @export var jump_velocity: float = 4.5
 @export var gravity: float = 9.8
 
+# --- WORLD BOUNDS ---
+# Must stay in sync with minimap.gd/minimap_controller.gd world bounds.
+# The margin keeps the player's capsule center safely inside the 5400×5400 ground.
+const WORLD_MIN_X := -2700.0
+const WORLD_MAX_X := 2700.0
+const WORLD_MIN_Z := -2700.0
+const WORLD_MAX_Z := 2700.0
+const WORLD_BOUNDARY_MARGIN := 0.6
+
 # --- COMBAT & STATS ---
 @export_group("Combat")
 @export var max_health: float = 100.0
@@ -68,7 +77,7 @@ func _ready() -> void:
 	if camera_pivot:
 		camera_pivot.top_level = true
 
-	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	if melee_hitbox:
 		melee_hitbox.monitoring = false
 		melee_hitbox.body_entered.connect(_on_melee_hit)
@@ -136,16 +145,20 @@ func stop_voice() -> void:
 		sm.stop_voice()
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("interact") and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
+	if event.is_action_pressed("interact"):
 		try_interact()
 
 	if event.is_action_pressed("ui_cancel") and (not dialogue_ui or not dialogue_ui.is_open):
-		if Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
+		# Camera has no mouse-look, so keep the cursor visible. Esc only toggles
+		# whether the visible cursor is confined to the game window.
+		if Input.get_mouse_mode() == Input.MOUSE_MODE_CONFINED:
 			Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 		else:
-			Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+			Input.set_mouse_mode(Input.MOUSE_MODE_CONFINED)
 
 func _physics_process(delta: float) -> void:
+	_clamp_to_world_bounds()
+
 	if camera_pivot:
 		camera_pivot.global_position = global_position + Vector3(0, 0, 0)
 
@@ -153,6 +166,7 @@ func _physics_process(delta: float) -> void:
 		velocity.x = move_toward(velocity.x, 0, acceleration * delta)
 		velocity.z = move_toward(velocity.z, 0, acceleration * delta)
 		move_and_slide()
+		_clamp_to_world_bounds()
 		return
 
 	# 1. Apply Gravity
@@ -160,21 +174,21 @@ func _physics_process(delta: float) -> void:
 		velocity.y -= gravity * delta
 
 	# 2. Handle Combat / Attacking & Magic Signs
-	if Input.is_action_just_pressed("attack") and not is_attacking and is_on_floor() and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
+	if Input.is_action_just_pressed("attack") and not is_attacking and is_on_floor():
 		if current_stamina >= 15.0:
 			start_attack()
 		else:
 			if hud and hud.has_method("show_notification"):
 				hud.show_notification("Not enough Stamina!", Color(1, 0.4, 0.4, 1))
 
-	if Input.is_action_just_pressed("cast_igni") and not is_attacking and is_on_floor() and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
+	if Input.is_action_just_pressed("cast_igni") and not is_attacking and is_on_floor():
 		if current_mana >= 35.0:
 			cast_igni()
 		else:
 			if hud and hud.has_method("show_notification"):
 				hud.show_notification("Not enough Mana for Igni!", Color(0.3, 0.6, 1.0, 1))
 
-	if Input.is_action_just_pressed("cast_quen") and not is_attacking and is_on_floor() and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
+	if Input.is_action_just_pressed("cast_quen") and not is_attacking and is_on_floor():
 		if current_mana >= 40.0:
 			cast_quen()
 		else:
@@ -185,6 +199,7 @@ func _physics_process(delta: float) -> void:
 		velocity.x = move_toward(velocity.x, 0, acceleration * delta)
 		velocity.z = move_toward(velocity.z, 0, acceleration * delta)
 		move_and_slide()
+		_clamp_to_world_bounds()
 		return
 
 	# 3. Handle Jump
@@ -235,6 +250,29 @@ func _physics_process(delta: float) -> void:
 			if tex_idle: sprite.texture = tex_idle
 
 	move_and_slide()
+	_clamp_to_world_bounds()
+
+func _clamp_to_world_bounds() -> void:
+	var min_x := WORLD_MIN_X + WORLD_BOUNDARY_MARGIN
+	var max_x := WORLD_MAX_X - WORLD_BOUNDARY_MARGIN
+	var min_z := WORLD_MIN_Z + WORLD_BOUNDARY_MARGIN
+	var max_z := WORLD_MAX_Z - WORLD_BOUNDARY_MARGIN
+
+	var old_position := global_position
+	var clamped_position := old_position
+	clamped_position.x = clamp(clamped_position.x, min_x, max_x)
+	clamped_position.z = clamp(clamped_position.z, min_z, max_z)
+
+	if clamped_position == old_position:
+		return
+
+	global_position = clamped_position
+
+	# Stop velocity pushing out of bounds so the player does not repeatedly slide/fall at the edge.
+	if (old_position.x < min_x and velocity.x < 0.0) or (old_position.x > max_x and velocity.x > 0.0):
+		velocity.x = 0.0
+	if (old_position.z < min_z and velocity.z < 0.0) or (old_position.z > max_z and velocity.z > 0.0):
+		velocity.z = 0.0
 
 # --- WITCHER MAGIC SIGNS (AoE - hits all around, no directional cone) ---
 func cast_igni() -> void:

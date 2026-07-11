@@ -174,7 +174,7 @@ func close_dialogue() -> void:
 			active_npc.request_failed.disconnect(_on_npc_error)
 		active_npc = null
 		
-	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
 func _add_to_voice_queue(text: String, speaker: String, voice_key: String = "") -> void:
 	# Only queue NPC lines - player has no voice

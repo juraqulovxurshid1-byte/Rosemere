@@ -1,63 +1,51 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://scripts/hud.gd" id="1_script"]
+[ext_resource type="FontFile" path="res://fonts/Cinzel-Regular.ttf" id="2_font"]
+[ext_resource type="Texture2D" path="res://art_v2/hud_bar_frame.png" id="3_bar_frame"]
+[ext_resource type="Texture2D" path="res://art_v2/hud_bar_fill_hp.png" id="4_hp_fill"]
+[ext_resource type="Texture2D" path="res://art_v2/hud_bar_fill_stamina.png" id="5_stamina_fill"]
+[ext_resource type="Texture2D" path="res://art_v2/hud_bar_fill_mana.png" id="6_mana_fill"]
+[ext_resource type="Texture2D" path="res://art_v2/hud_icon_coin.png" id="7_coin_icon"]
+[ext_resource type="Texture2D" path="res://art_v2/hud_icon_sword.png" id="8_sword_icon"]
+[ext_resource type="Texture2D" path="res://art_v2/hud_icon_scroll.png" id="9_scroll_icon"]
+[ext_resource type="Texture2D" path="res://art_v2/hud_corner_ornament.png" id="10_corner_ornament"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_health_bg"]
-bg_color = Color(0.15, 0.05, 0.05, 0.8)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_time_panel"]
+bg_color = Color(0.121569, 0.101961, 0.0901961, 0.72)
+border_width_left = 8
+border_width_top = 8
+border_width_right = 8
+border_width_bottom = 8
+border_color = Color(0.121569, 0.101961, 0.0901961, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_time_inner"]
+bg_color = Color(0, 0, 0, 0)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.4, 0.1, 0.1, 1)
+border_color = Color(0.65098, 0.2, 0.14902, 1)
 corner_radius_top_left = 4
 corner_radius_top_right = 4
 corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_health_fill"]
-bg_color = Color(0.8, 0.15, 0.15, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stamina_bg"]
-bg_color = Color(0.05, 0.15, 0.05, 0.8)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hud_panel"]
+bg_color = Color(0.121569, 0.101961, 0.0901961, 0.6)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.1, 0.4, 0.1, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stamina_fill"]
-bg_color = Color(0.2, 0.75, 0.25, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mana_bg"]
-bg_color = Color(0.05, 0.08, 0.18, 0.8)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.1, 0.2, 0.5, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mana_fill"]
-bg_color = Color(0.2, 0.45, 0.9, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
+border_color = Color(0.65098, 0.2, 0.14902, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_boss_bg"]
 bg_color = Color(0.1, 0.02, 0.12, 0.9)
@@ -91,74 +79,286 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Control"]
-layout_mode = 0
-offset_left = 20.0
-offset_top = 20.0
-offset_right = 340.0
-offset_bottom = 230.0
-theme_override_constants/separation = 8
+[node name="TimePanel" type="Panel" parent="Control"]
+custom_minimum_size = Vector2(244, 38)
+layout_mode = 1
+anchors_preset = -1
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 260.0
+offset_bottom = 54.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_time_panel")
 
-[node name="HealthBar" type="ProgressBar" parent="Control/VBoxContainer"]
-custom_minimum_size = Vector2(0, 26)
+[node name="TimeInner" type="Panel" parent="Control/TimePanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_top = 6.0
+offset_right = -6.0
+offset_bottom = -6.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_time_inner")
+
+[node name="TimeOrnamentLeft" type="TextureRect" parent="Control/TimePanel"]
+layout_mode = 1
+offset_left = 3.0
+offset_top = -6.0
+offset_right = 28.0
+offset_bottom = 19.0
+mouse_filter = 2
+texture = ExtResource("10_corner_ornament")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TimeOrnamentRight" type="TextureRect" parent="Control/TimePanel"]
+layout_mode = 1
+offset_left = 216.0
+offset_top = -6.0
+offset_right = 241.0
+offset_bottom = 19.0
+mouse_filter = 2
+texture = ExtResource("10_corner_ornament")
+flip_h = true
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TimeRow" type="HBoxContainer" parent="Control/TimePanel/TimeInner"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_right = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 7
+alignment = 1
+
+[node name="TimeLabel" type="Label" parent="Control/TimePanel/TimeInner/TimeRow"]
+custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
-theme_override_styles/background = SubResource("StyleBoxFlat_health_bg")
-theme_override_styles/fill = SubResource("StyleBoxFlat_health_fill")
-value = 100.0
-show_percentage = false
+theme_override_colors/font_color = Color(0.690196, 0.552941, 0.341176, 1)
+theme_override_colors/font_outline_color = Color(0.0509804, 0.0392157, 0.0392157, 1)
+theme_override_constants/outline_size = 3
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 18
+text = "08:00:00"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="HealthText" type="Label" parent="Control/VBoxContainer/HealthBar"]
+[node name="TimeDaySeparator" type="Label" parent="Control/TimePanel/TimeInner/TimeRow"]
+custom_minimum_size = Vector2(10, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.690196, 0.552941, 0.341176, 1)
+theme_override_colors/font_outline_color = Color(0.0509804, 0.0392157, 0.0392157, 1)
+theme_override_constants/outline_size = 3
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 18
+text = "·"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DayLabel" type="Label" parent="Control/TimePanel/TimeInner/TimeRow"]
+custom_minimum_size = Vector2(74, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.690196, 0.552941, 0.341176, 1)
+theme_override_colors/font_outline_color = Color(0.0509804, 0.0392157, 0.0392157, 1)
+theme_override_constants/outline_size = 3
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 18
+text = "Day 1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HudPanel" type="Panel" parent="Control"]
+custom_minimum_size = Vector2(292, 190)
+layout_mode = 1
+anchors_preset = -1
+offset_left = 16.0
+offset_top = 66.0
+offset_right = 308.0
+offset_bottom = 256.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_hud_panel")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Control/HudPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 14.0
+offset_right = -20.0
+offset_bottom = -14.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="HPBar" type="TextureProgressBar" parent="Control/HudPanel/VBoxContainer"]
+custom_minimum_size = Vector2(252, 20)
+layout_mode = 2
+size_flags_horizontal = 0
+max_value = 100.0
+value = 100.0
+nine_patch_stretch = true
+stretch_margin_left = 8
+stretch_margin_top = 6
+stretch_margin_right = 8
+stretch_margin_bottom = 6
+texture_progress = ExtResource("4_hp_fill")
+texture_over = ExtResource("3_bar_frame")
+
+[node name="HealthText" type="Label" parent="Control/HudPanel/VBoxContainer/HPBar"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 14
-text = " HP: 100 / 100"
+theme_override_colors/font_color = Color(0.690196, 0.552941, 0.341176, 1)
+theme_override_colors/font_outline_color = Color(0.0509804, 0.0392157, 0.0392157, 1)
+theme_override_constants/outline_size = 3
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 11
+text = "HP"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="StaminaBar" type="ProgressBar" parent="Control/VBoxContainer"]
-custom_minimum_size = Vector2(0, 16)
+[node name="StaminaBar" type="TextureProgressBar" parent="Control/HudPanel/VBoxContainer"]
+custom_minimum_size = Vector2(252, 16)
 layout_mode = 2
-theme_override_styles/background = SubResource("StyleBoxFlat_stamina_bg")
-theme_override_styles/fill = SubResource("StyleBoxFlat_stamina_fill")
+size_flags_horizontal = 0
+max_value = 100.0
 value = 100.0
-show_percentage = false
+nine_patch_stretch = true
+stretch_margin_left = 8
+stretch_margin_top = 6
+stretch_margin_right = 8
+stretch_margin_bottom = 6
+texture_progress = ExtResource("5_stamina_fill")
+texture_over = ExtResource("3_bar_frame")
 
-[node name="ManaBar" type="ProgressBar" parent="Control/VBoxContainer"]
-custom_minimum_size = Vector2(0, 16)
+[node name="StaminaText" type="Label" parent="Control/HudPanel/VBoxContainer/StaminaBar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.690196, 0.552941, 0.341176, 1)
+theme_override_colors/font_outline_color = Color(0.0509804, 0.0392157, 0.0392157, 1)
+theme_override_constants/outline_size = 3
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 11
+text = "SP"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ManaBar" type="TextureProgressBar" parent="Control/HudPanel/VBoxContainer"]
+custom_minimum_size = Vector2(252, 16)
 layout_mode = 2
-theme_override_styles/background = SubResource("StyleBoxFlat_mana_bg")
-theme_override_styles/fill = SubResource("StyleBoxFlat_mana_fill")
+size_flags_horizontal = 0
+max_value = 100.0
 value = 100.0
-show_percentage = false
+nine_patch_stretch = true
+stretch_margin_left = 8
+stretch_margin_top = 6
+stretch_margin_right = 8
+stretch_margin_bottom = 6
+texture_progress = ExtResource("6_mana_fill")
+texture_over = ExtResource("3_bar_frame")
 
-[node name="GoldLabel" type="Label" parent="Control/VBoxContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.98, 0.82, 0.2, 1)
-theme_override_font_sizes/font_size = 20
-text = "💰 Gold Coins: 0"
+[node name="ManaText" type="Label" parent="Control/HudPanel/VBoxContainer/ManaBar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.690196, 0.552941, 0.341176, 1)
+theme_override_colors/font_outline_color = Color(0.0509804, 0.0392157, 0.0392157, 1)
+theme_override_constants/outline_size = 3
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 11
+text = "MP"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="WeaponLabel" type="Label" parent="Control/VBoxContainer"]
+[node name="GoldRow" type="HBoxContainer" parent="Control/HudPanel/VBoxContainer"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.85, 0.9, 0.95, 1)
-theme_override_font_sizes/font_size = 18
-text = "⚔️ Weapon: Rusty Sword (25 Dmg)"
+theme_override_constants/separation = 6
 
-[node name="QuestLabel" type="Label" parent="Control/VBoxContainer"]
+[node name="GoldIcon" type="TextureRect" parent="Control/HudPanel/VBoxContainer/GoldRow"]
+custom_minimum_size = Vector2(25, 25)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.95, 0.8, 0.4, 1)
-theme_override_font_sizes/font_size = 18
-text = "📜 Quest: Slay North Road Bandits (0 / 3)"
+size_flags_horizontal = 0
+size_flags_vertical = 0
+texture = ExtResource("7_coin_icon")
+expand_mode = 1
+stretch_mode = 5
 
-[node name="TimeLabel" type="Label" parent="Control/VBoxContainer"]
+[node name="GoldLabel" type="Label" parent="Control/HudPanel/VBoxContainer/GoldRow"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.95, 0.85, 1)
-theme_override_font_sizes/font_size = 18
-text = "⏰ Time: Midday"
+theme_override_colors/font_color = Color(0.690196, 0.552941, 0.341176, 1)
+theme_override_colors/font_outline_color = Color(0.0509804, 0.0392157, 0.0392157, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 14
+text = "Gold Coins: 0"
+vertical_alignment = 1
+
+[node name="WeaponRow" type="HBoxContainer" parent="Control/HudPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="WeaponIcon" type="TextureRect" parent="Control/HudPanel/VBoxContainer/WeaponRow"]
+custom_minimum_size = Vector2(25, 25)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+texture = ExtResource("8_sword_icon")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="WeaponLabel" type="Label" parent="Control/HudPanel/VBoxContainer/WeaponRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.690196, 0.552941, 0.341176, 1)
+theme_override_colors/font_outline_color = Color(0.0509804, 0.0392157, 0.0392157, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 13
+text = "Weapon: Rusty Sword (25 Dmg)"
+vertical_alignment = 1
+
+[node name="QuestRow" type="HBoxContainer" parent="Control/HudPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="QuestIcon" type="TextureRect" parent="Control/HudPanel/VBoxContainer/QuestRow"]
+custom_minimum_size = Vector2(25, 25)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+texture = ExtResource("9_scroll_icon")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="QuestLabel" type="Label" parent="Control/HudPanel/VBoxContainer/QuestRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.690196, 0.552941, 0.341176, 1)
+theme_override_colors/font_outline_color = Color(0.0509804, 0.0392157, 0.0392157, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 12
+text = "Quest: Slay North Road Bandits (0 / 3)"
+vertical_alignment = 1
 
 [node name="NotificationLabel" type="Label" parent="Control"]
 layout_mode = 1

@@ -16,6 +16,10 @@ run/main_scene="res://scenes/RosemereWorld.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://icon.svg"
 
+[autoload]
+
+GameClock="*res://scripts/game_clock.gd"
+
 [display]
 
 window/size/viewport_width=1280

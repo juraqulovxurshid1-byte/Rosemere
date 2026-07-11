@@ -30,6 +30,7 @@ func _ready() -> void:
 		minimap_button.pressed.connect(_on_minimap_clicked)
 	if close_map_button:
 		close_map_button.pressed.connect(_on_close_map)
+		close_map_button.gui_input.connect(_on_close_map_button_gui_input)
 	if full_map_overlay:
 		full_map_overlay.visible = false
 	_player = _find_player()
@@ -77,3 +78,37 @@ func _unhandled_input(event: InputEvent) -> void:
 			if full_map_overlay:
 				full_map_overlay.visible = !full_map_overlay.visible
 
+func _on_close_map_button_gui_input(event: InputEvent) -> void:
+	# TEMP DEV/TEST TOOL: right-click the full map image to teleport the player.
+	# Remove this once Rosemere's kingdom content and normal traversal are built.
+	if not (event is InputEventMouseButton):
+		return
+	if not event.pressed or event.button_index != MOUSE_BUTTON_RIGHT:
+		return
+	if full_map_overlay == null or not full_map_overlay.visible:
+		return
+	if map_image == null:
+		return
+
+	var map_rect: Rect2 = map_image.get_global_rect()
+	if not map_rect.has_point(event.global_position):
+		return
+
+	_teleport_player_to_map_position(event.global_position - map_rect.position)
+	_on_close_map()
+	get_viewport().set_input_as_handled()
+
+func _teleport_player_to_map_position(map_pixel_position: Vector2) -> void:
+	if _player == null:
+		_player = _find_player()
+	if _player == null:
+		return
+
+	# Inverse of FullMapPlayerDot tracking above:
+	# world -> normalized -> map pixels becomes map pixels -> normalized -> world.
+	var nx: float = clamp(map_pixel_position.x / MAP_DISPLAY_W, 0.0, 1.0)
+	var nz: float = clamp(map_pixel_position.y / MAP_DISPLAY_H, 0.0, 1.0)
+	var world_x: float = clamp(lerp(WORLD_MIN_X, WORLD_MAX_X, nx), WORLD_MIN_X, WORLD_MAX_X)
+	var world_z: float = clamp(lerp(WORLD_MIN_Z, WORLD_MAX_Z, nz), WORLD_MIN_Z, WORLD_MAX_Z)
+
+	_player.global_position = Vector3(world_x, _player.global_position.y, world_z)
