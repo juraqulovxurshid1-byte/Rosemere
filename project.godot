@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 [autoload]
 
 GameClock="*res://scripts/game_clock.gd"
+WeatherManager="*res://scripts/weather_manager.gd"
 
 [display]
 

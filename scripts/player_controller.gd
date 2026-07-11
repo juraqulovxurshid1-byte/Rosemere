@@ -48,6 +48,11 @@ var player_level: int = 1
 @onready var melee_hitbox: Area3D = $MeleeHitbox
 @onready var interact_area: Area3D = $InteractArea
 
+# --- RIG ANIMATION NODES ---
+@onready var rig_sub_viewport: SubViewport = $RigSubViewport
+@onready var rig_root: Node2D = $RigSubViewport/PlayerRig
+@onready var rig_anim_player: AnimationPlayer = $RigSubViewport/PlayerRig/AnimationPlayer
+
 # --- 2.5D SPRITE ANIMATION RESOURCES ---
 var tex_idle: Texture2D = null
 var tex_run1: Texture2D = null
@@ -72,6 +77,9 @@ func _ready() -> void:
 	if ResourceLoader.exists("res://art_v2/player_attack.png"):
 		tex_attack = load("res://art_v2/player_attack.png") as Texture2D
 
+	# --- Setup rig SubViewport texture on Sprite3D ---
+	call_deferred("_setup_rig_viewport")
+
 	_ensure_input_mappings()
 
 	if camera_pivot:
@@ -83,6 +91,96 @@ func _ready() -> void:
 		melee_hitbox.body_entered.connect(_on_melee_hit)
 
 	call_deferred("_find_ui")
+
+func _setup_rig_viewport() -> void:
+	if not rig_anim_player:
+		return
+
+	# Create animations programmatically
+	var lib = rig_anim_player.get_animation_library("")
+	if lib == null:
+		lib = AnimationLibrary.new()
+		rig_anim_player.add_animation_library("", lib)
+
+	# Create walk animation
+	var walk = Animation.new()
+	walk.resource_name = "walk"
+	walk.length = 0.5
+	walk.loop_mode = Animation.LOOP_LINEAR
+	walk.step = 0.05
+
+	var t0 = walk.add_track(Animation.TYPE_VALUE)
+	walk.track_set_path(t0, NodePath("HipLeft:rotation"))
+	walk.track_insert_key(t0, 0.0, 0.0)
+	walk.track_insert_key(t0, 0.125, deg_to_rad(-18.0))
+	walk.track_insert_key(t0, 0.25, 0.0)
+	walk.track_insert_key(t0, 0.375, deg_to_rad(18.0))
+	walk.track_insert_key(t0, 0.5, 0.0)
+
+	var t1 = walk.add_track(Animation.TYPE_VALUE)
+	walk.track_set_path(t1, NodePath("HipRight:rotation"))
+	walk.track_insert_key(t1, 0.0, 0.0)
+	walk.track_insert_key(t1, 0.125, deg_to_rad(18.0))
+	walk.track_insert_key(t1, 0.25, 0.0)
+	walk.track_insert_key(t1, 0.375, deg_to_rad(-18.0))
+	walk.track_insert_key(t1, 0.5, 0.0)
+
+	var t2 = walk.add_track(Animation.TYPE_VALUE)
+	walk.track_set_path(t2, NodePath("TorsoCloak:position:y"))
+	walk.track_insert_key(t2, 0.0, 0.0)
+	walk.track_insert_key(t2, 0.0625, 1.5)
+	walk.track_insert_key(t2, 0.125, 2.0)
+	walk.track_insert_key(t2, 0.1875, 1.5)
+	walk.track_insert_key(t2, 0.25, 0.0)
+	walk.track_insert_key(t2, 0.3125, -1.5)
+	walk.track_insert_key(t2, 0.375, -2.0)
+	walk.track_insert_key(t2, 0.4375, -1.5)
+	walk.track_insert_key(t2, 0.5, 0.0)
+
+	var t3 = walk.add_track(Animation.TYPE_VALUE)
+	walk.track_set_path(t3, NodePath("TorsoCloak:rotation"))
+	walk.track_insert_key(t3, 0.0, 0.0)
+	walk.track_insert_key(t3, 0.0625, deg_to_rad(-0.75))
+	walk.track_insert_key(t3, 0.125, deg_to_rad(-1.5))
+	walk.track_insert_key(t3, 0.1875, deg_to_rad(-0.75))
+	walk.track_insert_key(t3, 0.25, 0.0)
+	walk.track_insert_key(t3, 0.3125, deg_to_rad(0.75))
+	walk.track_insert_key(t3, 0.375, deg_to_rad(1.5))
+	walk.track_insert_key(t3, 0.4375, deg_to_rad(0.75))
+	walk.track_insert_key(t3, 0.5, 0.0)
+
+	lib.add_animation("walk", walk)
+
+	# Create idle animation
+	var idle = Animation.new()
+	idle.resource_name = "idle"
+	idle.length = 0.1
+	idle.loop_mode = Animation.LOOP_NONE
+
+	var id0 = idle.add_track(Animation.TYPE_VALUE)
+	idle.track_set_path(id0, NodePath("HipLeft:rotation"))
+	idle.track_insert_key(id0, 0.0, 0.0)
+
+	var id1 = idle.add_track(Animation.TYPE_VALUE)
+	idle.track_set_path(id1, NodePath("HipRight:rotation"))
+	idle.track_insert_key(id1, 0.0, 0.0)
+
+	var id2 = idle.add_track(Animation.TYPE_VALUE)
+	idle.track_set_path(id2, NodePath("TorsoCloak:position:y"))
+	idle.track_insert_key(id2, 0.0, 0.0)
+
+	var id3 = idle.add_track(Animation.TYPE_VALUE)
+	idle.track_set_path(id3, NodePath("TorsoCloak:rotation"))
+	idle.track_insert_key(id3, 0.0, 0.0)
+
+	lib.add_animation("idle", idle)
+
+	# Wire SubViewport to Sprite3D
+	if rig_sub_viewport and sprite:
+		sprite.texture = rig_sub_viewport.get_texture()
+
+	# Start with idle
+	rig_anim_player.play("idle")
 
 func _ensure_input_mappings() -> void:
 	var key_mappings := {
@@ -234,20 +332,36 @@ func _physics_process(delta: float) -> void:
 		velocity.x = move_toward(velocity.x, 0, acceleration * delta)
 		velocity.z = move_toward(velocity.z, 0, acceleration * delta)
 
-	# --- 2.5D SPRITE ANIMATION CONTROLLER ---
-	# No flip_h, no rotation - sprite always faces camera via Y-billboard
-	if sprite:
+	# --- RIG ANIMATION CONTROLLER ---
+	# Uses the 2D skeleton rig rendered to the Sprite3D via SubViewport
+	if rig_root and rig_anim_player:
+		# Face direction: flip rig on X axis based on horizontal movement
+		if abs(velocity.x) > 0.5:
+			rig_root.scale.x = -1.0 if velocity.x < 0 else 1.0
+
 		if is_attacking:
-			if tex_attack: sprite.texture = tex_attack
+			# Keep current animation pose during attack
+			pass
 		elif velocity.length() > 0.5 and is_on_floor():
-			anim_timer += delta * current_speed * 1.5
-			if anim_timer > 0.22:
-				anim_timer = 0.0
-				run_frame = (run_frame + 1) % 2
-				if tex_run1 and tex_run2:
-					sprite.texture = tex_run1 if run_frame == 0 else tex_run2
+			if rig_anim_player.current_animation != "walk":
+				rig_anim_player.play("walk")
 		else:
-			if tex_idle: sprite.texture = tex_idle
+			if rig_anim_player.current_animation != "idle":
+				rig_anim_player.play("idle")
+	else:
+		# Fallback: static sprite texture switching
+		if sprite:
+			if is_attacking:
+				if tex_attack: sprite.texture = tex_attack
+			elif velocity.length() > 0.5 and is_on_floor():
+				anim_timer += delta * current_speed * 1.5
+				if anim_timer > 0.22:
+					anim_timer = 0.0
+					run_frame = (run_frame + 1) % 2
+					if tex_run1 and tex_run2:
+						sprite.texture = tex_run1 if run_frame == 0 else tex_run2
+			else:
+				if tex_idle: sprite.texture = tex_idle
 
 	move_and_slide()
 	_clamp_to_world_bounds()
