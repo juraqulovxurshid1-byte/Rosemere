@@ -9,7 +9,7 @@ var _player: Node3D = null
 # Map image is 896×1200, rendered at 3× zoom = 2688×3600
 const MAP_TEX_W := 896.0
 const MAP_TEX_H := 1200.0
-const ZOOM := 1.5
+const ZOOM := 1.2
 const MINIMAP_SIZE := 200.0
 
 # World area the map covers (tune these to match your kingdom layout)
