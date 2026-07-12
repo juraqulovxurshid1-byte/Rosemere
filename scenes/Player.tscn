@@ -1,8 +1,7 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/player_controller.gd" id="1_script"]
-[ext_resource type="PackedScene" path="res://scenes/PlayerRig.tscn" id="2_rig"]
-[ext_resource type="Texture2D" path="res://art_v2/player_knight.png" id="3_knight"]
+[ext_resource type="Texture2D" path="res://art_v2/player_knight.png" id="2_knight"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_player"]
 radius = 0.4
@@ -28,7 +27,7 @@ shaded = true
 texture_filter = 0
 alpha_cut = 2
 alpha_scissor_threshold = 0.12
-texture = ExtResource("3_knight")
+texture = ExtResource("2_knight")
 centered = true
 region_enabled = false
 pixel_size = 0.01045
@@ -43,18 +42,6 @@ size = 48.0
 fov = 25.0
 far = 10000.0
 current = true
-
-[node name="RigSubViewport" type="SubViewport" parent="."]
-size = Vector2i(560, 768)
-transparent_bg = true
-handle_input_locally = false
-render_target_update_mode = 3
-
-[node name="Camera2D" type="Camera2D" parent="RigSubViewport"]
-position = Vector2(0, 10)
-zoom = Vector2(1, 1)
-
-[node name="PlayerRig" parent="RigSubViewport" instance=ExtResource("2_rig")]
 
 [node name="MeleeHitbox" type="Area3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, -1.0)
