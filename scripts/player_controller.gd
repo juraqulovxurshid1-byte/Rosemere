@@ -63,6 +63,12 @@ var run_frame: int = 0
 var dialogue_ui: DialogueUI = null
 var hud: HUD = null
 
+# DEBUG instrumentation for frozen-idle animation bug (temporary)
+var _anim_debug_timer: float = 0.0
+var _pose_debug_frame: int = 0
+var _fps_debug_timer: float = 0.0
+var _main_process_count: int = 0
+
 func _ready() -> void:
 	current_health = max_health
 	current_stamina = max_stamina
@@ -96,91 +102,292 @@ func _setup_rig_viewport() -> void:
 	if not rig_anim_player:
 		return
 
-	# Create animations programmatically
+	# DEBUG: inspect AnimationPlayer root_node resolution
+	print("[ANIM-DEBUG] rig_anim_player.get_path() = ", rig_anim_player.get_path())
+	print("[ANIM-DEBUG] rig_anim_player.root_node = ", rig_anim_player.root_node)
+	print("[ANIM-DEBUG] rig_anim_player.get_parent().get_path() = ", rig_anim_player.get_parent().get_path())
+	print("[ANIM-DEBUG] rig_anim_player.process_callback = ", rig_anim_player.callback_mode_process, " (PHYSICS=0, IDLE=1, MANUAL=2)")
+
+	# Create animations programmatically for the new joint-chain rig
 	var lib = rig_anim_player.get_animation_library("")
 	if lib == null:
 		lib = AnimationLibrary.new()
 		rig_anim_player.add_animation_library("", lib)
 
-	# Create walk animation
-	var walk = Animation.new()
-	walk.resource_name = "walk"
-	walk.length = 0.5
-	walk.loop_mode = Animation.LOOP_LINEAR
-	walk.step = 0.05
-
-	var t0 = walk.add_track(Animation.TYPE_VALUE)
-	walk.track_set_path(t0, NodePath("HipLeft:rotation"))
-	walk.track_insert_key(t0, 0.0, 0.0)
-	walk.track_insert_key(t0, 0.125, deg_to_rad(-18.0))
-	walk.track_insert_key(t0, 0.25, 0.0)
-	walk.track_insert_key(t0, 0.375, deg_to_rad(18.0))
-	walk.track_insert_key(t0, 0.5, 0.0)
-
-	var t1 = walk.add_track(Animation.TYPE_VALUE)
-	walk.track_set_path(t1, NodePath("HipRight:rotation"))
-	walk.track_insert_key(t1, 0.0, 0.0)
-	walk.track_insert_key(t1, 0.125, deg_to_rad(18.0))
-	walk.track_insert_key(t1, 0.25, 0.0)
-	walk.track_insert_key(t1, 0.375, deg_to_rad(-18.0))
-	walk.track_insert_key(t1, 0.5, 0.0)
-
-	var t2 = walk.add_track(Animation.TYPE_VALUE)
-	walk.track_set_path(t2, NodePath("TorsoCloak:position:y"))
-	walk.track_insert_key(t2, 0.0, 0.0)
-	walk.track_insert_key(t2, 0.0625, 1.5)
-	walk.track_insert_key(t2, 0.125, 2.0)
-	walk.track_insert_key(t2, 0.1875, 1.5)
-	walk.track_insert_key(t2, 0.25, 0.0)
-	walk.track_insert_key(t2, 0.3125, -1.5)
-	walk.track_insert_key(t2, 0.375, -2.0)
-	walk.track_insert_key(t2, 0.4375, -1.5)
-	walk.track_insert_key(t2, 0.5, 0.0)
-
-	var t3 = walk.add_track(Animation.TYPE_VALUE)
-	walk.track_set_path(t3, NodePath("TorsoCloak:rotation"))
-	walk.track_insert_key(t3, 0.0, 0.0)
-	walk.track_insert_key(t3, 0.0625, deg_to_rad(-0.75))
-	walk.track_insert_key(t3, 0.125, deg_to_rad(-1.5))
-	walk.track_insert_key(t3, 0.1875, deg_to_rad(-0.75))
-	walk.track_insert_key(t3, 0.25, 0.0)
-	walk.track_insert_key(t3, 0.3125, deg_to_rad(0.75))
-	walk.track_insert_key(t3, 0.375, deg_to_rad(1.5))
-	walk.track_insert_key(t3, 0.4375, deg_to_rad(0.75))
-	walk.track_insert_key(t3, 0.5, 0.0)
-
-	lib.add_animation("walk", walk)
-
-	# Create idle animation
+	# --- IDLE: all joints at rest pose ---
 	var idle = Animation.new()
 	idle.resource_name = "idle"
 	idle.length = 0.1
 	idle.loop_mode = Animation.LOOP_NONE
 
-	var id0 = idle.add_track(Animation.TYPE_VALUE)
-	idle.track_set_path(id0, NodePath("HipLeft:rotation"))
-	idle.track_insert_key(id0, 0.0, 0.0)
+	var i_hl = idle.add_track(Animation.TYPE_VALUE)
+	idle.track_set_path(i_hl, NodePath("HipLeft:rotation"))
+	idle.track_insert_key(i_hl, 0.0, 0.0)
 
-	var id1 = idle.add_track(Animation.TYPE_VALUE)
-	idle.track_set_path(id1, NodePath("HipRight:rotation"))
-	idle.track_insert_key(id1, 0.0, 0.0)
+	var i_kl = idle.add_track(Animation.TYPE_VALUE)
+	idle.track_set_path(i_kl, NodePath("HipLeft/KneeLeft:rotation"))
+	idle.track_insert_key(i_kl, 0.0, 0.0)
 
-	var id2 = idle.add_track(Animation.TYPE_VALUE)
-	idle.track_set_path(id2, NodePath("TorsoCloak:position:y"))
-	idle.track_insert_key(id2, 0.0, 0.0)
+	var i_hr = idle.add_track(Animation.TYPE_VALUE)
+	idle.track_set_path(i_hr, NodePath("HipRight:rotation"))
+	idle.track_insert_key(i_hr, 0.0, 0.0)
 
-	var id3 = idle.add_track(Animation.TYPE_VALUE)
-	idle.track_set_path(id3, NodePath("TorsoCloak:rotation"))
-	idle.track_insert_key(id3, 0.0, 0.0)
+	var i_kr = idle.add_track(Animation.TYPE_VALUE)
+	idle.track_set_path(i_kr, NodePath("HipRight/KneeRight:rotation"))
+	idle.track_insert_key(i_kr, 0.0, 0.0)
+
+	var i_sl = idle.add_track(Animation.TYPE_VALUE)
+	idle.track_set_path(i_sl, NodePath("ShoulderLeft:rotation"))
+	idle.track_insert_key(i_sl, 0.0, 0.0)
+
+	var i_el = idle.add_track(Animation.TYPE_VALUE)
+	idle.track_set_path(i_el, NodePath("ShoulderLeft/ElbowLeft:rotation"))
+	idle.track_insert_key(i_el, 0.0, 0.0)
+
+	var i_sr = idle.add_track(Animation.TYPE_VALUE)
+	idle.track_set_path(i_sr, NodePath("ShoulderRight:rotation"))
+	idle.track_insert_key(i_sr, 0.0, 0.0)
+
+	var i_er = idle.add_track(Animation.TYPE_VALUE)
+	idle.track_set_path(i_er, NodePath("ShoulderRight/ElbowRight:rotation"))
+	idle.track_insert_key(i_er, 0.0, 0.0)
+
+	var i_ty = idle.add_track(Animation.TYPE_VALUE)
+	idle.track_set_path(i_ty, NodePath("TorsoCloak:position:y"))
+	idle.track_insert_key(i_ty, 0.0, -366.0)
+
+	var i_tr = idle.add_track(Animation.TYPE_VALUE)
+	idle.track_set_path(i_tr, NodePath("TorsoCloak:rotation"))
+	idle.track_insert_key(i_tr, 0.0, 0.0)
+
+	_debug_dump_anim_tracks(idle, "idle")
 
 	lib.add_animation("idle", idle)
+
+	# --- WALK: natural opposing-limb gait, 0.5s loop ---
+	var walk = Animation.new()
+	walk.resource_name = "walk"
+	walk.length = 0.5
+	walk.loop_mode = Animation.LOOP_LINEAR
+	walk.step = 0.025
+
+	var w_hl = walk.add_track(Animation.TYPE_VALUE)
+	walk.track_set_path(w_hl, NodePath("HipLeft:rotation"))
+	walk.track_insert_key(w_hl, 0.0, deg_to_rad(30.0))
+	walk.track_insert_key(w_hl, 0.125, deg_to_rad(10.0))
+	walk.track_insert_key(w_hl, 0.25, deg_to_rad(-30.0))
+	walk.track_insert_key(w_hl, 0.375, deg_to_rad(10.0))
+	walk.track_insert_key(w_hl, 0.5, deg_to_rad(30.0))
+
+	var w_kl = walk.add_track(Animation.TYPE_VALUE)
+	walk.track_set_path(w_kl, NodePath("HipLeft/KneeLeft:rotation"))
+	walk.track_insert_key(w_kl, 0.0, deg_to_rad(0.0))
+	walk.track_insert_key(w_kl, 0.125, deg_to_rad(10.0))
+	walk.track_insert_key(w_kl, 0.25, deg_to_rad(0.0))
+	walk.track_insert_key(w_kl, 0.375, deg_to_rad(50.0))
+	walk.track_insert_key(w_kl, 0.5, deg_to_rad(0.0))
+
+	var w_hr = walk.add_track(Animation.TYPE_VALUE)
+	walk.track_set_path(w_hr, NodePath("HipRight:rotation"))
+	walk.track_insert_key(w_hr, 0.0, deg_to_rad(-30.0))
+	walk.track_insert_key(w_hr, 0.125, deg_to_rad(-10.0))
+	walk.track_insert_key(w_hr, 0.25, deg_to_rad(30.0))
+	walk.track_insert_key(w_hr, 0.375, deg_to_rad(-10.0))
+	walk.track_insert_key(w_hr, 0.5, deg_to_rad(-30.0))
+
+	var w_kr = walk.add_track(Animation.TYPE_VALUE)
+	walk.track_set_path(w_kr, NodePath("HipRight/KneeRight:rotation"))
+	walk.track_insert_key(w_kr, 0.0, deg_to_rad(0.0))
+	walk.track_insert_key(w_kr, 0.125, deg_to_rad(50.0))
+	walk.track_insert_key(w_kr, 0.25, deg_to_rad(0.0))
+	walk.track_insert_key(w_kr, 0.375, deg_to_rad(10.0))
+	walk.track_insert_key(w_kr, 0.5, deg_to_rad(0.0))
+
+	var w_sl = walk.add_track(Animation.TYPE_VALUE)
+	walk.track_set_path(w_sl, NodePath("ShoulderLeft:rotation"))
+	walk.track_insert_key(w_sl, 0.0, deg_to_rad(-25.0))
+	walk.track_insert_key(w_sl, 0.125, deg_to_rad(0.0))
+	walk.track_insert_key(w_sl, 0.25, deg_to_rad(25.0))
+	walk.track_insert_key(w_sl, 0.375, deg_to_rad(0.0))
+	walk.track_insert_key(w_sl, 0.5, deg_to_rad(-25.0))
+
+	var w_el = walk.add_track(Animation.TYPE_VALUE)
+	walk.track_set_path(w_el, NodePath("ShoulderLeft/ElbowLeft:rotation"))
+	walk.track_insert_key(w_el, 0.0, deg_to_rad(10.0))
+	walk.track_insert_key(w_el, 0.125, deg_to_rad(5.0))
+	walk.track_insert_key(w_el, 0.25, deg_to_rad(10.0))
+	walk.track_insert_key(w_el, 0.375, deg_to_rad(25.0))
+	walk.track_insert_key(w_el, 0.5, deg_to_rad(10.0))
+
+	var w_sr = walk.add_track(Animation.TYPE_VALUE)
+	walk.track_set_path(w_sr, NodePath("ShoulderRight:rotation"))
+	walk.track_insert_key(w_sr, 0.0, deg_to_rad(25.0))
+	walk.track_insert_key(w_sr, 0.125, deg_to_rad(0.0))
+	walk.track_insert_key(w_sr, 0.25, deg_to_rad(-25.0))
+	walk.track_insert_key(w_sr, 0.375, deg_to_rad(0.0))
+	walk.track_insert_key(w_sr, 0.5, deg_to_rad(25.0))
+
+	var w_er = walk.add_track(Animation.TYPE_VALUE)
+	walk.track_set_path(w_er, NodePath("ShoulderRight/ElbowRight:rotation"))
+	walk.track_insert_key(w_er, 0.0, deg_to_rad(10.0))
+	walk.track_insert_key(w_er, 0.125, deg_to_rad(25.0))
+	walk.track_insert_key(w_er, 0.25, deg_to_rad(10.0))
+	walk.track_insert_key(w_er, 0.375, deg_to_rad(5.0))
+	walk.track_insert_key(w_er, 0.5, deg_to_rad(10.0))
+
+	var w_ty = walk.add_track(Animation.TYPE_VALUE)
+	walk.track_set_path(w_ty, NodePath("TorsoCloak:position:y"))
+	walk.track_insert_key(w_ty, 0.0, -370.0)
+	walk.track_insert_key(w_ty, 0.125, -366.0)
+	walk.track_insert_key(w_ty, 0.25, -370.0)
+	walk.track_insert_key(w_ty, 0.375, -366.0)
+	walk.track_insert_key(w_ty, 0.5, -370.0)
+
+	var w_tr = walk.add_track(Animation.TYPE_VALUE)
+	walk.track_set_path(w_tr, NodePath("TorsoCloak:rotation"))
+	walk.track_insert_key(w_tr, 0.0, deg_to_rad(4.0))
+	walk.track_insert_key(w_tr, 0.125, deg_to_rad(3.0))
+	walk.track_insert_key(w_tr, 0.25, deg_to_rad(4.0))
+	walk.track_insert_key(w_tr, 0.375, deg_to_rad(3.0))
+	walk.track_insert_key(w_tr, 0.5, deg_to_rad(4.0))
+
+	_debug_dump_anim_tracks(walk, "walk")
+	_debug_dump_rig_tree(rig_root)
+
+	lib.add_animation("walk", walk)
+
+	# --- RUN: faster tempo, larger amplitude, forward lean ---
+	var run = Animation.new()
+	run.resource_name = "run"
+	run.length = 0.35
+	run.loop_mode = Animation.LOOP_LINEAR
+	run.step = 0.025
+
+	var r_hl = run.add_track(Animation.TYPE_VALUE)
+	run.track_set_path(r_hl, NodePath("HipLeft:rotation"))
+	run.track_insert_key(r_hl, 0.0, deg_to_rad(40.0))
+	run.track_insert_key(r_hl, 0.0875, deg_to_rad(0.0))
+	run.track_insert_key(r_hl, 0.175, deg_to_rad(-40.0))
+	run.track_insert_key(r_hl, 0.2625, deg_to_rad(0.0))
+	run.track_insert_key(r_hl, 0.35, deg_to_rad(40.0))
+
+	var r_kl = run.add_track(Animation.TYPE_VALUE)
+	run.track_set_path(r_kl, NodePath("HipLeft/KneeLeft:rotation"))
+	run.track_insert_key(r_kl, 0.0, deg_to_rad(0.0))
+	run.track_insert_key(r_kl, 0.0875, deg_to_rad(25.0))
+	run.track_insert_key(r_kl, 0.175, deg_to_rad(55.0))
+	run.track_insert_key(r_kl, 0.2625, deg_to_rad(25.0))
+	run.track_insert_key(r_kl, 0.35, deg_to_rad(0.0))
+
+	var r_hr = run.add_track(Animation.TYPE_VALUE)
+	run.track_set_path(r_hr, NodePath("HipRight:rotation"))
+	run.track_insert_key(r_hr, 0.0, deg_to_rad(-40.0))
+	run.track_insert_key(r_hr, 0.0875, deg_to_rad(0.0))
+	run.track_insert_key(r_hr, 0.175, deg_to_rad(40.0))
+	run.track_insert_key(r_hr, 0.2625, deg_to_rad(0.0))
+	run.track_insert_key(r_hr, 0.35, deg_to_rad(-40.0))
+
+	var r_kr = run.add_track(Animation.TYPE_VALUE)
+	run.track_set_path(r_kr, NodePath("HipRight/KneeRight:rotation"))
+	run.track_insert_key(r_kr, 0.0, deg_to_rad(55.0))
+	run.track_insert_key(r_kr, 0.0875, deg_to_rad(25.0))
+	run.track_insert_key(r_kr, 0.175, deg_to_rad(0.0))
+	run.track_insert_key(r_kr, 0.2625, deg_to_rad(25.0))
+	run.track_insert_key(r_kr, 0.35, deg_to_rad(55.0))
+
+	var r_sl = run.add_track(Animation.TYPE_VALUE)
+	run.track_set_path(r_sl, NodePath("ShoulderLeft:rotation"))
+	run.track_insert_key(r_sl, 0.0, deg_to_rad(-30.0))
+	run.track_insert_key(r_sl, 0.0875, deg_to_rad(0.0))
+	run.track_insert_key(r_sl, 0.175, deg_to_rad(30.0))
+	run.track_insert_key(r_sl, 0.2625, deg_to_rad(0.0))
+	run.track_insert_key(r_sl, 0.35, deg_to_rad(-30.0))
+
+	var r_el = run.add_track(Animation.TYPE_VALUE)
+	run.track_set_path(r_el, NodePath("ShoulderLeft/ElbowLeft:rotation"))
+	run.track_insert_key(r_el, 0.0, deg_to_rad(15.0))
+	run.track_insert_key(r_el, 0.0875, deg_to_rad(10.0))
+	run.track_insert_key(r_el, 0.175, deg_to_rad(20.0))
+	run.track_insert_key(r_el, 0.2625, deg_to_rad(10.0))
+	run.track_insert_key(r_el, 0.35, deg_to_rad(15.0))
+
+	var r_sr = run.add_track(Animation.TYPE_VALUE)
+	run.track_set_path(r_sr, NodePath("ShoulderRight:rotation"))
+	run.track_insert_key(r_sr, 0.0, deg_to_rad(30.0))
+	run.track_insert_key(r_sr, 0.0875, deg_to_rad(0.0))
+	run.track_insert_key(r_sr, 0.175, deg_to_rad(-30.0))
+	run.track_insert_key(r_sr, 0.2625, deg_to_rad(0.0))
+	run.track_insert_key(r_sr, 0.35, deg_to_rad(30.0))
+
+	var r_er = run.add_track(Animation.TYPE_VALUE)
+	run.track_set_path(r_er, NodePath("ShoulderRight/ElbowRight:rotation"))
+	run.track_insert_key(r_er, 0.0, deg_to_rad(20.0))
+	run.track_insert_key(r_er, 0.0875, deg_to_rad(10.0))
+	run.track_insert_key(r_er, 0.175, deg_to_rad(15.0))
+	run.track_insert_key(r_er, 0.2625, deg_to_rad(10.0))
+	run.track_insert_key(r_er, 0.35, deg_to_rad(20.0))
+
+	var r_ty = run.add_track(Animation.TYPE_VALUE)
+	run.track_set_path(r_ty, NodePath("TorsoCloak:position:y"))
+	run.track_insert_key(r_ty, 0.0, -366.0)
+	run.track_insert_key(r_ty, 0.0875, -367.5)
+	run.track_insert_key(r_ty, 0.175, -369.0)
+	run.track_insert_key(r_ty, 0.2625, -367.5)
+	run.track_insert_key(r_ty, 0.35, -366.0)
+
+	var r_tr = run.add_track(Animation.TYPE_VALUE)
+	run.track_set_path(r_tr, NodePath("TorsoCloak:rotation"))
+	run.track_insert_key(r_tr, 0.0, deg_to_rad(10.0))
+	run.track_insert_key(r_tr, 0.0875, deg_to_rad(12.0))
+	run.track_insert_key(r_tr, 0.175, deg_to_rad(10.0))
+	run.track_insert_key(r_tr, 0.2625, deg_to_rad(8.0))
+	run.track_insert_key(r_tr, 0.35, deg_to_rad(10.0))
+
+	_debug_dump_anim_tracks(run, "run")
+
+	lib.add_animation("run", run)
+
+	# DEBUG: verify registered animations and clip contents
+	var anim_list := rig_anim_player.get_animation_list()
+	print("[ANIM-DEBUG] setup: registered animation names = ", anim_list)
+	for anim_name in anim_list:
+		var anim := rig_anim_player.get_animation(anim_name)
+		print("[ANIM-DEBUG] setup: clip '%s' length=%.3f track_count=%d" % [anim_name, anim.length, anim.get_track_count()])
 
 	# Wire SubViewport to Sprite3D
 	if rig_sub_viewport and sprite:
 		sprite.texture = rig_sub_viewport.get_texture()
+		# DEBUG: viewport/texture live-feed checks
+		print("[ANIM-DEBUG] viewport: RigSubViewport.render_target_update_mode = ", rig_sub_viewport.render_target_update_mode, " (UPDATE_ALWAYS=3)")
+		print("[ANIM-DEBUG] viewport: Sprite3D.texture == RigSubViewport.get_texture() ? ", sprite.texture == rig_sub_viewport.get_texture())
+		print("[ANIM-DEBUG] viewport: Sprite3D.texture instance_id = ", sprite.texture.get_instance_id(), ", RigSubViewport.get_texture() instance_id = ", rig_sub_viewport.get_texture().get_instance_id())
 
 	# Start with idle
 	rig_anim_player.play("idle")
+
+
+# DEBUG: dump animation track NodePaths and first/last key values
+func _debug_dump_anim_tracks(anim: Animation, label: String) -> void:
+	print("[ANIM-DEBUG] track dump for '%s' (resource_name='%s', length=%.3f):" % [label, anim.resource_name, anim.length])
+	for i in range(anim.get_track_count()):
+		var path: NodePath = anim.track_get_path(i)
+		var key_count: int = anim.track_get_key_count(i)
+		var first_val: Variant = anim.track_get_key_value(i, 0) if key_count > 0 else null
+		var last_val: Variant = anim.track_get_key_value(i, key_count - 1) if key_count > 0 else null
+		print("[ANIM-DEBUG]   track %d: path=%s keys=%d first=%s last=%s" % [i, path, key_count, first_val, last_val])
+
+
+# DEBUG: dump actual runtime NodePaths under the rig root
+func _debug_dump_rig_tree(node: Node, prefix: String = "") -> void:
+	for child in node.get_children():
+		var path: String
+		if prefix != "":
+			path = prefix + "/" + child.name
+		else:
+			path = child.name
+		print("[ANIM-DEBUG] rig node: ", path)
+		_debug_dump_rig_tree(child, path)
+
 
 func _ensure_input_mappings() -> void:
 	var key_mappings := {
@@ -253,6 +460,17 @@ func _unhandled_input(event: InputEvent) -> void:
 			Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 		else:
 			Input.set_mouse_mode(Input.MOUSE_MODE_CONFINED)
+
+func _process(delta: float) -> void:
+	_main_process_count += 1
+	_fps_debug_timer += delta
+	if _fps_debug_timer >= 1.0:
+		_fps_debug_timer -= 1.0
+		var rig_count := 0
+		if rig_root and rig_root.has_method("get_process_count"):
+			rig_count = rig_root.get_process_count()
+		print("[ANIM-DEBUG] cadence: fps=%.1f main_process_count=%d rig_process_count=%d" % [Engine.get_frames_per_second(), _main_process_count, rig_count])
+		_main_process_count = 0
 
 func _physics_process(delta: float) -> void:
 	_clamp_to_world_bounds()
@@ -339,12 +557,27 @@ func _physics_process(delta: float) -> void:
 		if abs(velocity.x) > 0.5:
 			rig_root.scale.x = -1.0 if velocity.x < 0 else 1.0
 
+		# DEBUG: animation state inputs (throttled to reduce console spam)
+		_anim_debug_timer += delta
+		if _anim_debug_timer >= 0.5:
+			_anim_debug_timer = 0.0
+			print("[ANIM-DEBUG] inputs: velocity.length()=%.3f is_on_floor()=%s rig_anim_player==null=%s" % [velocity.length(), is_on_floor(), rig_anim_player == null])
+
 		if is_attacking:
 			# Keep current animation pose during attack
 			pass
 		elif velocity.length() > 0.5 and is_on_floor():
-			if rig_anim_player.current_animation != "walk":
-				rig_anim_player.play("walk")
+			var target_anim := "run" if current_speed > move_speed + 0.1 else "walk"
+			# DEBUG: live node pose while moving (every ~15 frames)
+			_pose_debug_frame += 1
+			if _pose_debug_frame % 15 == 0:
+				var hip_left := rig_root.get_node("HipLeft") as Node2D
+				if hip_left:
+					print("[ANIM-DEBUG] live pose: HipLeft.rotation=%.4f rad (%.1f°)" % [hip_left.rotation, rad_to_deg(hip_left.rotation)])
+			# DEBUG: animation state decision
+			print("[ANIM-DEBUG] decision: target_anim=%s current_animation=%s" % [target_anim, rig_anim_player.current_animation])
+			if rig_anim_player.current_animation != target_anim:
+				rig_anim_player.play(target_anim)
 		else:
 			if rig_anim_player.current_animation != "idle":
 				rig_anim_player.play("idle")

@@ -1,0 +1,251 @@
+{
+  "source_size": [
+    1408,
+    768
+  ],
+  "joints": {
+    "neck": [
+      700,
+      180
+    ],
+    "shoulder_right": [
+      580,
+      205
+    ],
+    "shoulder_left": [
+      805,
+      205
+    ],
+    "elbow_right": [
+      525,
+      330
+    ],
+    "elbow_left": [
+      855,
+      330
+    ],
+    "wrist_right": [
+      535,
+      470
+    ],
+    "wrist_left": [
+      825,
+      470
+    ],
+    "hip_right": [
+      625,
+      405
+    ],
+    "hip_left": [
+      775,
+      405
+    ],
+    "knee_right": [
+      595,
+      535
+    ],
+    "knee_left": [
+      795,
+      535
+    ],
+    "ankle_right": [
+      555,
+      695
+    ],
+    "ankle_left": [
+      845,
+      695
+    ]
+  },
+  "pieces": {
+    "torso_cloak": {
+      "crop": [
+        370,
+        39,
+        953,
+        761
+      ],
+      "size": [
+        583,
+        722
+      ],
+      "pivot_global": [
+        700,
+        405
+      ],
+      "pivot_local": [
+        330,
+        366
+      ],
+      "pivot_joint": null
+    },
+    "thigh_left": {
+      "crop": [
+        708,
+        410,
+        849,
+        531
+      ],
+      "size": [
+        141,
+        121
+      ],
+      "pivot_global": [
+        775,
+        405
+      ],
+      "pivot_local": [
+        67,
+        -5
+      ],
+      "pivot_joint": "hip_left"
+    },
+    "shin_left": {
+      "crop": [
+        723,
+        553,
+        864,
+        668
+      ],
+      "size": [
+        141,
+        115
+      ],
+      "pivot_global": [
+        795,
+        535
+      ],
+      "pivot_local": [
+        72,
+        -18
+      ],
+      "pivot_joint": "knee_left"
+    },
+    "thigh_right": {
+      "crop": [
+        566,
+        396,
+        713,
+        550
+      ],
+      "size": [
+        147,
+        154
+      ],
+      "pivot_global": [
+        625,
+        405
+      ],
+      "pivot_local": [
+        59,
+        9
+      ],
+      "pivot_joint": "hip_right"
+    },
+    "shin_right": {
+      "crop": [
+        558,
+        516,
+        685,
+        724
+      ],
+      "size": [
+        127,
+        208
+      ],
+      "pivot_global": [
+        595,
+        535
+      ],
+      "pivot_local": [
+        37,
+        19
+      ],
+      "pivot_joint": "knee_right"
+    },
+    "upperarm_left": {
+      "crop": [
+        748,
+        210,
+        912,
+        335
+      ],
+      "size": [
+        164,
+        125
+      ],
+      "pivot_global": [
+        805,
+        205
+      ],
+      "pivot_local": [
+        57,
+        -5
+      ],
+      "pivot_joint": "shoulder_left"
+    },
+    "forearm_left": {
+      "crop": [
+        758,
+        345,
+        921,
+        451
+      ],
+      "size": [
+        163,
+        106
+      ],
+      "pivot_global": [
+        855,
+        330
+      ],
+      "pivot_local": [
+        97,
+        -15
+      ],
+      "pivot_joint": "elbow_left"
+    },
+    "upperarm_right": {
+      "crop": [
+        525,
+        237,
+        639,
+        343
+      ],
+      "size": [
+        114,
+        106
+      ],
+      "pivot_global": [
+        580,
+        205
+      ],
+      "pivot_local": [
+        55,
+        -32
+      ],
+      "pivot_joint": "shoulder_right"
+    },
+    "forearm_right": {
+      "crop": [
+        452,
+        348,
+        608,
+        452
+      ],
+      "size": [
+        156,
+        104
+      ],
+      "pivot_global": [
+        525,
+        330
+      ],
+      "pivot_local": [
+        73,
+        -18
+      ],
+      "pivot_joint": "elbow_right"
+    }
+  }
+}
