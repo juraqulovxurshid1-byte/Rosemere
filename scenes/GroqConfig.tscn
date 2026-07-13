@@ -1,8 +1,0 @@
-[gd_scene load_steps=2 format=3]
-
-[ext_resource type="Script" path="res://scripts/groq_config.gd" id="1_groqcfg"]
-
-[node name="GroqConfig" type="Node"]
-script = ExtResource("1_groqcfg")
-groq_api_key = "YOUR_GROQ_API_KEY_HERE"
-model_name = "llama-3.3-70b-versatile"

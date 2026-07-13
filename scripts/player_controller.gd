@@ -7,7 +7,12 @@ class_name PlayerController
 @export var move_speed: float = 6.0
 @export var sprint_speed: float = 9.0
 @export var acceleration: float = 10.0
-@export var jump_velocity: float = 4.5
+# Standing / walk jump (lower hop).
+@export var jump_velocity: float = 5.2
+# Sprint jump: higher/farther than idle, but not absurd.
+# apex ≈ v^2 / (2g): 5.2→1.4 units, 8.2→3.4 units (~2.5× higher).
+@export var sprint_jump_velocity: float = 6.6
+@export var sprint_jump_forward_boost: float = 3.2
 @export var gravity: float = 9.8
 
 # --- WORLD BOUNDS ---
@@ -24,7 +29,7 @@ const WORLD_BOUNDARY_MARGIN := 0.6
 @export var max_health: float = 100.0
 @export var max_stamina: float = 100.0
 @export var max_mana: float = 100.0
-@export var attack_duration: float = 0.5
+@export var attack_duration: float = 0.67
 @export var attack_damage: float = 25.0
 var current_health: float = max_health
 var current_stamina: float = max_stamina
@@ -48,18 +53,69 @@ var player_level: int = 1
 @onready var melee_hitbox: Area3D = $MeleeHitbox
 @onready var interact_area: Area3D = $InteractArea
 
-# --- RIG ANIMATION NODES ---
-@onready var rig_sub_viewport: SubViewport = $RigSubViewport
-@onready var rig_root: Node2D = $RigSubViewport/PlayerRig
-@onready var rig_anim_player: AnimationPlayer = $RigSubViewport/PlayerRig/AnimationPlayer
+# --- SPRITE SHEET ANIMATION (SpriteCook walk / run / attack) ---
+const IDLE_TEX_PATH := "res://art_v2/player_knight.png"  # fallback still portrait
+const IDLE_SHEET_PATH := "res://art_v2/player_idle_sheet.png"
+const WALK_SHEET_PATH := "res://art_v2/player_walk_sheet.png"
+const RUN_SHEET_PATH := "res://art_v2/player_run_sheet.png"
+const ATTACK_SHEET_PATH := "res://art_v2/player_attack_sheet.png"
+const RUN_JUMP_SHEET_PATH := "res://art_v2/player_run_jump_sheet.png"
 
-# --- 2.5D SPRITE ANIMATION RESOURCES ---
+const IDLE_FRAME_COUNT := 6
+const WALK_FRAME_COUNT := 8
+const RUN_FRAME_COUNT := 10
+const ATTACK_FRAME_COUNT := 10
+const RUN_JUMP_FRAME_COUNT := 13
+const RUN_JUMP_APEX_FRAME := 6  # peak pose
+const IDLE_FRAME_SIZE := Vector2i(328, 466)
+const WALK_FRAME_SIZE := Vector2i(640, 640)
+const RUN_FRAME_SIZE := Vector2i(640, 640)
+const ATTACK_FRAME_SIZE := Vector2i(596, 306)  # 5×2 anchor-aligned individual frames
+const RUN_JUMP_FRAME_SIZE := Vector2i(776, 700)  # ready sheet, body-locked
+const IDLE_COLUMNS := 6
+const WALK_COLUMNS := 8
+const RUN_COLUMNS := 10
+const ATTACK_COLUMNS := 5
+const RUN_JUMP_COLUMNS := 13
+const IDLE_FPS := 6.0  # gentle breathing/cloak loop
+const WALK_FPS := 10.0
+const RUN_FPS := 14.0
+# 10-frame overhead slash; ~0.67s total at 15 FPS (slightly longer read).
+const ATTACK_FPS := 15.0
+# Run-jump one-shot (~0.87s). Hold landing frames a touch longer in code.
+const RUN_JUMP_FPS := 14.0
+# Active hit frames: big sword arcs (poses 5–7, 0-based 4–6).
+const ATTACK_HIT_FRAME_START := 4
+const ATTACK_HIT_FRAME_END := 6
+
+# Idle portrait was tuned separately (1408×768 full texture).
+const IDLE_PIXEL_SIZE := 0.01747  # match walk/run body height
+const IDLE_SPRITE_Y := 3.852
+# Walk/run sheets are 640px tall; scale so body height matches idle, feet on ground.
+const ANIM_PIXEL_SIZE := 0.01205
+const WALK_SPRITE_Y := 3.850   # feet near bottom of each walk frame
+const RUN_SPRITE_Y := 3.604    # avg opaque feet ~row 619 on run sheet
+# Attack cells are 366px tall, feet bottom-aligned; match idle body height.
+const ATTACK_PIXEL_SIZE := 0.03192
+const ATTACK_SPRITE_Y := 4.325
+# Run-jump strip cells 258px; match idle body height, feet bottom-aligned.
+const RUN_JUMP_PIXEL_SIZE := 0.01205  # == ANIM_PIXEL_SIZE (walk/run)
+const RUN_JUMP_SPRITE_Y := 4.091
+
+enum AnimState { IDLE, WALK, RUN, ATTACK, RUN_JUMP }
+
 var tex_idle: Texture2D = null
-var tex_run1: Texture2D = null
-var tex_run2: Texture2D = null
-var tex_attack: Texture2D = null
+var tex_idle_sheet: Texture2D = null
+var tex_walk_sheet: Texture2D = null
+var tex_run_sheet: Texture2D = null
+var tex_attack_sheet: Texture2D = null
+var tex_run_jump_sheet: Texture2D = null
 var anim_timer: float = 0.0
-var run_frame: int = 0
+var anim_frame: int = 0
+var current_anim: AnimState = AnimState.IDLE
+var was_sprinting_on_jump: bool = false
+var run_jump_face_left: bool = false
+var run_jump_left_ground: bool = false
 var dialogue_ui: DialogueUI = null
 var hud: HUD = null
 
@@ -69,9 +125,8 @@ func _ready() -> void:
 	current_stamina = max_stamina
 	current_mana = max_mana
 
-
-
 	_ensure_input_mappings()
+	_setup_sprite_animation()
 
 	if camera_pivot:
 		camera_pivot.top_level = true
@@ -82,6 +137,18 @@ func _ready() -> void:
 		melee_hitbox.body_entered.connect(_on_melee_hit)
 
 	call_deferred("_find_ui")
+
+
+func _setup_sprite_animation() -> void:
+	tex_idle = load(IDLE_TEX_PATH) as Texture2D
+	tex_idle_sheet = load(IDLE_SHEET_PATH) as Texture2D
+	tex_walk_sheet = load(WALK_SHEET_PATH) as Texture2D
+	tex_run_sheet = load(RUN_SHEET_PATH) as Texture2D
+	tex_attack_sheet = load(ATTACK_SHEET_PATH) as Texture2D
+	tex_run_jump_sheet = load(RUN_JUMP_SHEET_PATH) as Texture2D
+	if tex_run_jump_sheet == null:
+		push_warning("Missing run-jump sheet: " + RUN_JUMP_SHEET_PATH)
+	_set_anim_state(AnimState.IDLE, true)
 
 func _ensure_input_mappings() -> void:
 	var key_mappings := {
@@ -164,6 +231,7 @@ func _physics_process(delta: float) -> void:
 	if dialogue_ui and dialogue_ui.is_open:
 		velocity.x = move_toward(velocity.x, 0, acceleration * delta)
 		velocity.z = move_toward(velocity.z, 0, acceleration * delta)
+		_update_sprite_animation(delta)
 		move_and_slide()
 		_clamp_to_world_bounds()
 		return
@@ -197,13 +265,46 @@ func _physics_process(delta: float) -> void:
 	if is_attacking:
 		velocity.x = move_toward(velocity.x, 0, acceleration * delta)
 		velocity.z = move_toward(velocity.z, 0, acceleration * delta)
+		_update_sprite_animation(delta)
 		move_and_slide()
 		_clamp_to_world_bounds()
 		return
 
 	# 3. Handle Jump
-	if Input.is_action_just_pressed("ui_accept") and is_on_floor():
-		velocity.y = jump_velocity
+	# Sprint-jump: high pyramid arc + forward leap + full RUN_JUMP sheet.
+	# Idle/walk-jump: lower hop (no run-jump sheet yet).
+	if Input.is_action_just_pressed("ui_accept") and is_on_floor() and not is_attacking:
+		var planar := Vector2(velocity.x, velocity.z).length()
+		var move_input := Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
+		# Treat as sprint-jump if Shift is held and we are (or were) moving.
+		# Do NOT require stamina or exact current_speed — that was freezing on a run frame.
+		was_sprinting_on_jump = (
+			Input.is_action_pressed("sprint")
+			and (planar > 0.35 or move_input.length() > 0.1 or current_anim == AnimState.RUN)
+		)
+
+		if was_sprinting_on_jump:
+			velocity.y = sprint_jump_velocity
+
+			var boost_dir := Vector3(velocity.x, 0.0, velocity.z)
+			if boost_dir.length() < 0.15:
+				boost_dir = Vector3(move_input.x, 0.0, move_input.y)
+			if boost_dir.length() > 0.001:
+				boost_dir = boost_dir.normalized()
+				var target_planar := maxf(planar, sprint_speed) + sprint_jump_forward_boost
+				velocity.x = boost_dir.x * target_planar
+				velocity.z = boost_dir.z * target_planar
+
+			run_jump_face_left = sprite.flip_h if sprite else (velocity.x < 0.0)
+			run_jump_left_ground = false
+			anim_timer = 0.0
+			anim_frame = 0
+			_set_anim_state(AnimState.RUN_JUMP, true)
+			_apply_run_jump_frame(0)
+			if sprite:
+				sprite.flip_h = run_jump_face_left
+		else:
+			velocity.y = jump_velocity
 
 	# 4. Handle Sprint, Stamina & Mana Regen
 	if Input.is_action_pressed("sprint") and velocity.length() > 0.5 and current_stamina > 0:
@@ -227,18 +328,262 @@ func _physics_process(delta: float) -> void:
 	var direction := Vector3(input_dir.x, 0, input_dir.y).normalized()
 
 	if direction:
-		velocity.x = lerp(velocity.x, direction.x * current_speed, acceleration * delta)
-		velocity.z = lerp(velocity.z, direction.z * current_speed, acceleration * delta)
+		var air_speed := current_speed
+		# Sprint-jump carries farther: allow up to sprint speed in air during RUN_JUMP.
+		if current_anim == AnimState.RUN_JUMP:
+			air_speed = maxf(current_speed, sprint_speed)
+		velocity.x = lerp(velocity.x, direction.x * air_speed, acceleration * delta)
+		velocity.z = lerp(velocity.z, direction.z * air_speed, acceleration * delta)
 	else:
-		velocity.x = move_toward(velocity.x, 0, acceleration * delta)
-		velocity.z = move_toward(velocity.z, 0, acceleration * delta)
+		# Don't kill run-jump forward momentum when keys are released mid-air.
+		var decel := acceleration * delta
+		if current_anim == AnimState.RUN_JUMP and not is_on_floor():
+			decel *= 0.25
+		velocity.x = move_toward(velocity.x, 0, decel)
+		velocity.z = move_toward(velocity.z, 0, decel)
 
-	# Flip sprite horizontally based on horizontal movement
-	if sprite and abs(velocity.x) > 0.1:
+	# Flip sprite horizontally based on horizontal movement.
+	# Walk/run sheets face right; flip_h = true faces left.
+	# Lock facing during run-jump so the one-shot doesn't mirror mid-cycle.
+	if sprite and current_anim == AnimState.RUN_JUMP:
+		sprite.flip_h = run_jump_face_left
+	elif sprite and abs(velocity.x) > 0.1:
 		sprite.flip_h = velocity.x < 0.0
+
+	_update_sprite_animation(delta)
 
 	move_and_slide()
 	_clamp_to_world_bounds()
+
+
+func _update_sprite_animation(delta: float) -> void:
+	if sprite == null:
+		return
+
+	# One-shot attack: advance frames, enable hitbox on slash frames, then release.
+	if current_anim == AnimState.ATTACK:
+		anim_timer += delta
+		var frame_time := 1.0 / ATTACK_FPS
+		if anim_timer >= frame_time:
+			var steps := int(anim_timer / frame_time)
+			anim_timer -= steps * frame_time
+			anim_frame += steps
+			if anim_frame >= ATTACK_FRAME_COUNT:
+				_finish_attack()
+				return
+			_apply_sheet_frame(ATTACK_FRAME_SIZE, anim_frame, ATTACK_COLUMNS)
+			_sync_attack_hitbox()
+		return
+
+	# Run-jump one-shot: sequential strip playback, body-locked sheet.
+	if current_anim == AnimState.RUN_JUMP:
+		if not is_on_floor():
+			run_jump_left_ground = true
+
+		# Always keep correct texture/region bound.
+		_apply_run_jump_frame(anim_frame)
+
+		anim_timer += delta
+		var frame_time := 1.0 / RUN_JUMP_FPS
+		if anim_timer >= frame_time:
+			var steps := int(anim_timer / frame_time)
+			anim_timer -= float(steps) * frame_time
+			anim_frame = mini(anim_frame + steps, RUN_JUMP_FRAME_COUNT - 1)
+			_apply_run_jump_frame(anim_frame)
+
+		# Early land: skip to landing/recover frames.
+		if run_jump_left_ground and is_on_floor():
+			var land_start := maxi(RUN_JUMP_FRAME_COUNT - 4, RUN_JUMP_APEX_FRAME)
+			if anim_frame < land_start:
+				anim_frame = land_start
+				_apply_run_jump_frame(anim_frame)
+			if anim_frame >= RUN_JUMP_FRAME_COUNT - 1:
+				_finish_run_jump()
+				return
+
+		# Finished strip: hand off (if still airborne, wait until land).
+		if anim_frame >= RUN_JUMP_FRAME_COUNT - 1:
+			if is_on_floor() and run_jump_left_ground:
+				_finish_run_jump()
+		return
+
+	# Horizontal speed only for ground locomotion.
+	# While airborne without a dedicated jump anim, keep last walk/run loop.
+	var planar_speed := Vector2(velocity.x, velocity.z).length()
+	var wanted: AnimState = AnimState.IDLE
+
+	if planar_speed > 0.35 and not is_attacking:
+		if current_speed >= sprint_speed - 0.05 and Input.is_action_pressed("sprint") and current_stamina > 0.0:
+			wanted = AnimState.RUN
+		else:
+			wanted = AnimState.WALK
+
+	if wanted != current_anim:
+		_set_anim_state(wanted)
+
+	# Idle / walk / run sheet loops
+	var fps: float
+	var frame_count: int
+	var frame_size: Vector2i
+	var columns: int
+	if current_anim == AnimState.IDLE:
+		fps = IDLE_FPS
+		frame_count = IDLE_FRAME_COUNT
+		frame_size = IDLE_FRAME_SIZE
+		columns = IDLE_COLUMNS
+	elif current_anim == AnimState.RUN:
+		fps = RUN_FPS
+		frame_count = RUN_FRAME_COUNT
+		frame_size = RUN_FRAME_SIZE
+		columns = RUN_COLUMNS
+	else:
+		fps = WALK_FPS
+		frame_count = WALK_FRAME_COUNT
+		frame_size = WALK_FRAME_SIZE
+		columns = WALK_COLUMNS
+
+	anim_timer += delta
+	var frame_time := 1.0 / fps
+	if anim_timer >= frame_time:
+		var steps := int(anim_timer / frame_time)
+		anim_timer -= steps * frame_time
+		anim_frame = (anim_frame + steps) % frame_count
+		_apply_sheet_frame(frame_size, anim_frame, columns)
+
+
+func _set_anim_state(state: AnimState, force: bool = false) -> void:
+	if sprite == null:
+		return
+	if state == current_anim and not force:
+		return
+
+	current_anim = state
+	anim_timer = 0.0
+	anim_frame = 0
+	# Keep Sprite3D pivot stable across sheet swaps (centered billboard).
+	sprite.offset = Vector2.ZERO
+	sprite.centered = true
+	sprite.pixel_size = sprite.pixel_size  # no-op keep; real size set per-state below
+	sprite.rotation.z = 0.0
+
+	match state:
+		AnimState.IDLE:
+			if tex_idle_sheet:
+				sprite.texture = tex_idle_sheet
+				sprite.region_enabled = true
+				sprite.pixel_size = IDLE_PIXEL_SIZE
+				sprite.position = Vector3(0.0, IDLE_SPRITE_Y, 0.0)
+				_apply_sheet_frame(IDLE_FRAME_SIZE, 0, IDLE_COLUMNS)
+			elif tex_idle:
+				sprite.texture = tex_idle
+				sprite.region_enabled = false
+				sprite.pixel_size = IDLE_PIXEL_SIZE
+				sprite.position = Vector3(0.0, IDLE_SPRITE_Y, 0.0)
+		AnimState.WALK:
+			if tex_walk_sheet:
+				sprite.texture = tex_walk_sheet
+			sprite.region_enabled = true
+			sprite.pixel_size = ANIM_PIXEL_SIZE
+			sprite.position = Vector3(0.0, WALK_SPRITE_Y, 0.0)
+			_apply_sheet_frame(WALK_FRAME_SIZE, 0, WALK_COLUMNS)
+		AnimState.RUN:
+			if tex_run_sheet:
+				sprite.texture = tex_run_sheet
+			sprite.region_enabled = true
+			sprite.pixel_size = ANIM_PIXEL_SIZE
+			sprite.position = Vector3(0.0, RUN_SPRITE_Y, 0.0)
+			_apply_sheet_frame(RUN_FRAME_SIZE, 0, RUN_COLUMNS)
+		AnimState.ATTACK:
+			if tex_attack_sheet:
+				sprite.texture = tex_attack_sheet
+			sprite.region_enabled = true
+			sprite.pixel_size = ATTACK_PIXEL_SIZE
+			sprite.position = Vector3(0.0, ATTACK_SPRITE_Y, 0.0)
+			_apply_sheet_frame(ATTACK_FRAME_SIZE, 0, ATTACK_COLUMNS)
+		AnimState.RUN_JUMP:
+			if tex_run_jump_sheet:
+				sprite.texture = tex_run_jump_sheet
+			sprite.offset = Vector2.ZERO
+			sprite.centered = true
+			sprite.pixel_size = RUN_JUMP_PIXEL_SIZE
+			sprite.position = Vector3(0.0, RUN_JUMP_SPRITE_Y, 0.0)
+			# CRITICAL: region must be on BEFORE display, single 276x276 cell only.
+			sprite.region_enabled = true
+			_apply_run_jump_frame(0)
+
+
+func _apply_sheet_frame(frame_size: Vector2i, frame_index: int, columns: int = 1) -> void:
+	if sprite == null:
+		return
+	frame_index = clampi(frame_index, 0, max(columns * 64, 1))
+	var col := frame_index % columns
+	var row := int(frame_index / float(columns))
+	sprite.region_enabled = true
+	sprite.region_rect = Rect2(
+		col * frame_size.x,
+		row * frame_size.y,
+		frame_size.x,
+		frame_size.y
+	)
+
+
+
+func _apply_run_jump_frame(frame_index: int) -> void:
+	if sprite == null:
+		return
+	if tex_run_jump_sheet == null:
+		return
+	frame_index = clampi(frame_index, 0, RUN_JUMP_FRAME_COUNT - 1)
+	# Same pipeline as walk/run: one sheet, crop exactly one cell.
+	if sprite.texture != tex_run_jump_sheet:
+		sprite.texture = tex_run_jump_sheet
+	sprite.centered = true
+	sprite.offset = Vector2.ZERO
+	sprite.pixel_size = RUN_JUMP_PIXEL_SIZE
+	sprite.position = Vector3(0.0, RUN_JUMP_SPRITE_Y, 0.0)
+	sprite.region_enabled = true
+	sprite.region_rect = Rect2(
+		frame_index * RUN_JUMP_FRAME_SIZE.x,
+		0,
+		RUN_JUMP_FRAME_SIZE.x,
+		RUN_JUMP_FRAME_SIZE.y
+	)
+
+
+func _sync_attack_hitbox() -> void:
+	if melee_hitbox == null:
+		return
+	var active := (
+		current_anim == AnimState.ATTACK
+		and anim_frame >= ATTACK_HIT_FRAME_START
+		and anim_frame <= ATTACK_HIT_FRAME_END
+	)
+	melee_hitbox.monitoring = active
+
+
+func _finish_attack() -> void:
+	is_attacking = false
+	if melee_hitbox:
+		melee_hitbox.monitoring = false
+	# Snap back via normal locomotion selection next frame.
+	current_anim = AnimState.IDLE
+	if sprite:
+		sprite.rotation.z = 0.0
+	_set_anim_state(AnimState.IDLE, true)
+
+
+func _finish_run_jump() -> void:
+	was_sprinting_on_jump = false
+	run_jump_left_ground = false
+	# Prefer continuing the sprint cycle so landing doesn't snap to a different silhouette.
+	var planar_speed := Vector2(velocity.x, velocity.z).length()
+	if planar_speed > 0.35 and Input.is_action_pressed("sprint") and current_stamina > 0.0:
+		_set_anim_state(AnimState.RUN, true)
+	elif planar_speed > 0.35:
+		_set_anim_state(AnimState.WALK, true)
+	else:
+		_set_anim_state(AnimState.IDLE, true)
+
 
 func _clamp_to_world_bounds() -> void:
 	var min_x := WORLD_MIN_X + WORLD_BOUNDARY_MARGIN
@@ -359,21 +704,18 @@ func start_attack() -> void:
 	if hud and hud.has_method("update_stamina"):
 		hud.update_stamina(current_stamina, max_stamina)
 
-	if melee_hitbox:
-		melee_hitbox.monitoring = true
-		print("Swinging sword/axe! (Attack initiated)")
+	print("Swinging sword/axe! (Attack initiated)")
 
+	# Cancel any leftover z-rotation from older attack tween polish.
 	if sprite:
-		var tween := create_tween()
-		tween.tween_property(sprite, "rotation:z", deg_to_rad(-15), attack_duration * 0.3)
-		tween.tween_property(sprite, "rotation:z", deg_to_rad(10), attack_duration * 0.4)
-		tween.tween_property(sprite, "rotation:z", 0.0, attack_duration * 0.3)
+		sprite.rotation.z = 0.0
 
-	await get_tree().create_timer(attack_duration).timeout
-
+	# Hitbox stays off during wind-up; enabled on slash frames by _sync_attack_hitbox().
 	if melee_hitbox:
 		melee_hitbox.monitoring = false
-	is_attacking = false
+
+	_set_anim_state(AnimState.ATTACK, true)
+	_sync_attack_hitbox()
 
 func _on_melee_hit(body: Node3D) -> void:
 	if body.has_method("take_damage") and body != self:

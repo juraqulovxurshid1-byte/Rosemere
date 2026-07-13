@@ -1,0 +1,72 @@
+{
+  "1": {
+    "file": "frame_01.png",
+    "width": 199,
+    "height": 272,
+    "anchor_x_in_frame": 99.5,
+    "anchor_y_in_frame": 266
+  },
+  "2": {
+    "file": "frame_02.png",
+    "width": 232,
+    "height": 295,
+    "anchor_x_in_frame": 116.0,
+    "anchor_y_in_frame": 282
+  },
+  "3": {
+    "file": "frame_03.png",
+    "width": 299,
+    "height": 262,
+    "anchor_x_in_frame": 149.5,
+    "anchor_y_in_frame": 256
+  },
+  "4": {
+    "file": "frame_04.png",
+    "width": 345,
+    "height": 243,
+    "anchor_x_in_frame": 137.0,
+    "anchor_y_in_frame": 230
+  },
+  "5": {
+    "file": "frame_05.png",
+    "width": 568,
+    "height": 237,
+    "anchor_x_in_frame": 251.0,
+    "anchor_y_in_frame": 231
+  },
+  "6": {
+    "file": "frame_06.png",
+    "width": 534,
+    "height": 248,
+    "anchor_x_in_frame": 267.0,
+    "anchor_y_in_frame": 242
+  },
+  "7": {
+    "file": "frame_07.png",
+    "width": 493,
+    "height": 242,
+    "anchor_x_in_frame": 246.5,
+    "anchor_y_in_frame": 236
+  },
+  "8": {
+    "file": "frame_08.png",
+    "width": 345,
+    "height": 241,
+    "anchor_x_in_frame": 172.5,
+    "anchor_y_in_frame": 234
+  },
+  "9": {
+    "file": "frame_09.png",
+    "width": 334,
+    "height": 247,
+    "anchor_x_in_frame": 167.0,
+    "anchor_y_in_frame": 241
+  },
+  "10": {
+    "file": "frame_10.png",
+    "width": 293,
+    "height": 259,
+    "anchor_x_in_frame": 146.5,
+    "anchor_y_in_frame": 253
+  }
+}
