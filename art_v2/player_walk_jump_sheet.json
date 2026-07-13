@@ -1,0 +1,269 @@
+{
+  "frames": {
+    "frame_00": {
+      "frame": {
+        "x": 20,
+        "y": 20,
+        "w": 1550,
+        "h": 720
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 1550,
+        "h": 720
+      },
+      "sourceSize": {
+        "w": 276.1,
+        "h": 407.0
+      }
+    },
+    "frame_01": {
+      "frame": {
+        "x": 1576,
+        "y": 20,
+        "w": 1550,
+        "h": 720
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 1550,
+        "h": 720
+      },
+      "sourceSize": {
+        "w": 276.1,
+        "h": 407.0
+      }
+    },
+    "frame_02": {
+      "frame": {
+        "x": 3132,
+        "y": 20,
+        "w": 1550,
+        "h": 720
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 1550,
+        "h": 720
+      },
+      "sourceSize": {
+        "w": 276.1,
+        "h": 407.0
+      }
+    },
+    "frame_03": {
+      "frame": {
+        "x": 4688,
+        "y": 20,
+        "w": 1550,
+        "h": 720
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 1550,
+        "h": 720
+      },
+      "sourceSize": {
+        "w": 276.1,
+        "h": 407.0
+      }
+    },
+    "frame_04": {
+      "frame": {
+        "x": 6244,
+        "y": 20,
+        "w": 1550,
+        "h": 720
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 1550,
+        "h": 720
+      },
+      "sourceSize": {
+        "w": 276.1,
+        "h": 407.0
+      }
+    },
+    "frame_05": {
+      "frame": {
+        "x": 7800,
+        "y": 20,
+        "w": 1550,
+        "h": 720
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 1550,
+        "h": 720
+      },
+      "sourceSize": {
+        "w": 276.1,
+        "h": 407.0
+      }
+    },
+    "frame_06": {
+      "frame": {
+        "x": 9356,
+        "y": 20,
+        "w": 1550,
+        "h": 720
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 1550,
+        "h": 720
+      },
+      "sourceSize": {
+        "w": 276.1,
+        "h": 407.0
+      }
+    },
+    "frame_07": {
+      "frame": {
+        "x": 10912,
+        "y": 20,
+        "w": 1550,
+        "h": 720
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 1550,
+        "h": 720
+      },
+      "sourceSize": {
+        "w": 276.1,
+        "h": 407.0
+      }
+    },
+    "frame_08": {
+      "frame": {
+        "x": 12468,
+        "y": 20,
+        "w": 1550,
+        "h": 720
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 1550,
+        "h": 720
+      },
+      "sourceSize": {
+        "w": 276.1,
+        "h": 407.0
+      }
+    },
+    "frame_09": {
+      "frame": {
+        "x": 14024,
+        "y": 20,
+        "w": 1550,
+        "h": 720
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 1550,
+        "h": 720
+      },
+      "sourceSize": {
+        "w": 276.1,
+        "h": 407.0
+      }
+    },
+    "frame_10": {
+      "frame": {
+        "x": 15580,
+        "y": 20,
+        "w": 1550,
+        "h": 720
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 1550,
+        "h": 720
+      },
+      "sourceSize": {
+        "w": 276.1,
+        "h": 407.0
+      }
+    },
+    "frame_11": {
+      "frame": {
+        "x": 17136,
+        "y": 20,
+        "w": 1550,
+        "h": 720
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 1550,
+        "h": 720
+      },
+      "sourceSize": {
+        "w": 276.1,
+        "h": 407.0
+      }
+    },
+    "frame_12": {
+      "frame": {
+        "x": 18692,
+        "y": 20,
+        "w": 1550,
+        "h": 720
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 1550,
+        "h": 720
+      },
+      "sourceSize": {
+        "w": 276.1,
+        "h": 407.0
+      }
+    }
+  },
+  "meta": {
+    "image": "player_walk_jump_sheet.png",
+    "format": "RGBA8888",
+    "note": "Cells 1550x720 (widened aspect ratio: primary increase in width for full cape in air frames 5-11; slightly taller height for Y axis, closer to 10:2 intent from previous narrow cells). Full original source rects centered. Frame 12 pixel-identical to frame 0. Cell size kept moderate (~1550x720) to preserve correct character scale with WALK_JUMP_PIXEL_SIZE=0.0315."
+  }
+}

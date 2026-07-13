@@ -60,12 +60,14 @@ const WALK_SHEET_PATH := "res://art_v2/player_walk_sheet.png"
 const RUN_SHEET_PATH := "res://art_v2/player_run_sheet.png"
 const ATTACK_SHEET_PATH := "res://art_v2/player_attack_sheet.png"
 const RUN_JUMP_SHEET_PATH := "res://art_v2/player_run_jump_sheet.png"
+const WALK_JUMP_SHEET_PATH := "res://art_v2/player_walk_jump_sheet.png"
 
 const IDLE_FRAME_COUNT := 6
 const WALK_FRAME_COUNT := 8
 const RUN_FRAME_COUNT := 10
 const ATTACK_FRAME_COUNT := 10
 const RUN_JUMP_FRAME_COUNT := 13
+const WALK_JUMP_FRAME_COUNT := 13
 const RUN_JUMP_APEX_FRAME := 6  # peak pose
 const IDLE_FRAME_SIZE := Vector2i(328, 466)
 const WALK_FRAME_SIZE := Vector2i(640, 640)
@@ -84,6 +86,8 @@ const RUN_FPS := 14.0
 const ATTACK_FPS := 15.0
 # Run-jump one-shot (~0.87s). Hold landing frames a touch longer in code.
 const RUN_JUMP_FPS := 14.0
+# Walk-jump one-shot (14 frames, walk-to-jump connected feel). ~1.08s at 13 FPS.
+const WALK_JUMP_FPS := 10.0  # slowed down from 13 → more natural walk-to-jump feel (~1.4s total)
 # Active hit frames: big sword arcs (poses 5–7, 0-based 4–6).
 const ATTACK_HIT_FRAME_START := 4
 const ATTACK_HIT_FRAME_END := 6
@@ -102,7 +106,47 @@ const ATTACK_SPRITE_Y := 4.325
 const RUN_JUMP_PIXEL_SIZE := 0.01205  # == ANIM_PIXEL_SIZE (walk/run)
 const RUN_JUMP_SPRITE_Y := 4.091
 
-enum AnimState { IDLE, WALK, RUN, ATTACK, RUN_JUMP }
+# Walk-jump sheet (first frame removed → 13 frames)
+# Clean single-row atlas. Body scale already tuned to match walk (0.0315).
+const WALK_JUMP_PIXEL_SIZE := 0.0315
+const WALK_JUMP_SPRITE_Y := 3.60
+
+# Controls for "crouch before liftoff" feel without delaying the actual physics jump
+# Strategy:
+# - Physics jump (velocity.y) is ALWAYS instant (no combat delay)
+# - Animation starts at the crouch (frame 2)
+# - The crouch/windup frames (2-4) play at very high speed so they flash by quickly
+# - As soon as we detect we are airborne, we skip straight to the first real air frame (5)
+const WALK_JUMP_TAKEOFF_START_FRAME := 4   # start directly at the deepest crouch (frame 4) so we show almost no "feet on ground" before air
+const WALK_JUMP_AIR_START_FRAME := 5          # first frame that is clearly in the air
+const WALK_JUMP_FAST_WINDUP_FRAMES := 4
+const WALK_JUMP_FAST_WINDUP_MULTIPLIER := 2.8
+
+# Hardcoded from the corrected player_walk_jump_sheet.json (13 frames)
+# FULL ORIGINAL FRAME CONTENT (no tight-bbox / no extra cropping)
+# Every painted pixel from the source is preserved — including the very bottom of the feet.
+# NATURAL FOOT PLACEMENT (per user spec):
+#   Frames 2,3,4 : feet still on ground
+#   Frames 5-11  : in the air (pyramid lift, max at frame 9)
+#   Frame 12     : feet back on ground
+# First original frame was removed. Single-row atlas.
+const WALK_JUMP_FRAMES: Array[Rect2] = [
+	Rect2(20, 20, 1550, 720),  # 0
+	Rect2(1576, 20, 1550, 720),  # 1
+	Rect2(3132, 20, 1550, 720),  # 2
+	Rect2(4688, 20, 1550, 720),  # 3
+	Rect2(6244, 20, 1550, 720),  # 4
+	Rect2(7800, 20, 1550, 720),  # 5
+	Rect2(9356, 20, 1550, 720),  # 6
+	Rect2(10912, 20, 1550, 720),  # 7
+	Rect2(12468, 20, 1550, 720),  # 8
+	Rect2(14024, 20, 1550, 720),  # 9
+	Rect2(15580, 20, 1550, 720),  # 10
+	Rect2(17136, 20, 1550, 720),  # 11
+	Rect2(18692, 20, 1550, 720),  # 12
+]
+
+enum AnimState { IDLE, WALK, RUN, ATTACK, RUN_JUMP, WALK_JUMP }
 
 var tex_idle: Texture2D = null
 var tex_idle_sheet: Texture2D = null
@@ -110,12 +154,15 @@ var tex_walk_sheet: Texture2D = null
 var tex_run_sheet: Texture2D = null
 var tex_attack_sheet: Texture2D = null
 var tex_run_jump_sheet: Texture2D = null
+var tex_walk_jump_sheet: Texture2D = null
 var anim_timer: float = 0.0
 var anim_frame: int = 0
 var current_anim: AnimState = AnimState.IDLE
 var was_sprinting_on_jump: bool = false
 var run_jump_face_left: bool = false
 var run_jump_left_ground: bool = false
+var walk_jump_left_ground: bool = false
+var walk_jump_face_left: bool = false
 var dialogue_ui: DialogueUI = null
 var hud: HUD = null
 
@@ -146,8 +193,18 @@ func _setup_sprite_animation() -> void:
 	tex_run_sheet = load(RUN_SHEET_PATH) as Texture2D
 	tex_attack_sheet = load(ATTACK_SHEET_PATH) as Texture2D
 	tex_run_jump_sheet = load(RUN_JUMP_SHEET_PATH) as Texture2D
+	tex_walk_jump_sheet = load(WALK_JUMP_SHEET_PATH) as Texture2D
+
+	if tex_walk_jump_sheet == null:
+		push_error("CRITICAL: Failed to load walk-jump sheet: " + WALK_JUMP_SHEET_PATH)
+	else:
+		print("[Player] Successfully loaded walk-jump sheet: ", WALK_JUMP_SHEET_PATH)
+
 	if tex_run_jump_sheet == null:
 		push_warning("Missing run-jump sheet: " + RUN_JUMP_SHEET_PATH)
+	if tex_walk_jump_sheet == null:
+		push_warning("Missing walk-jump sheet: " + WALK_JUMP_SHEET_PATH)
+
 	_set_anim_state(AnimState.IDLE, true)
 
 func _ensure_input_mappings() -> void:
@@ -304,7 +361,32 @@ func _physics_process(delta: float) -> void:
 			if sprite:
 				sprite.flip_h = run_jump_face_left
 		else:
+			# WALK / IDLE JUMP using new walk-jump sheet (connected feel)
+			# Physics jump is INSTANT (combat responsive).
+			# We start the animation at the crouch (frame 2) but immediately fast-forward
+			# the visual to the air pose as soon as the character has left the ground.
+			print("[Player] Normal jump → WALK_JUMP (no Shift)")
 			velocity.y = jump_velocity
+			walk_jump_face_left = sprite.flip_h if sprite else (velocity.x < 0.0)
+			walk_jump_left_ground = false
+			anim_timer = 0.0
+			anim_frame = WALK_JUMP_TAKEOFF_START_FRAME   # begin with crouch pose (now 3)
+			print("[Jump] Normal (no sprint) jump triggered → WALK_JUMP state")
+			_set_anim_state(AnimState.WALK_JUMP, true)
+			_apply_walk_jump_frame(anim_frame)
+			if sprite:
+				sprite.flip_h = walk_jump_face_left
+
+			# TEMP DEBUG notification — remove this block once confirmed working
+			if hud and hud.has_method("show_notification"):
+				hud.show_notification("WALK-JUMP ACTIVATED", Color(0.5, 1.0, 0.6, 1))
+
+	# Do not let the normal locomotion state machine override jump one-shots
+	if current_anim == AnimState.RUN_JUMP or current_anim == AnimState.WALK_JUMP:
+		_update_sprite_animation(delta)
+		move_and_slide()
+		_clamp_to_world_bounds()
+		return
 
 	# 4. Handle Sprint, Stamina & Mana Regen
 	if Input.is_action_pressed("sprint") and velocity.length() > 0.5 and current_stamina > 0:
@@ -347,6 +429,8 @@ func _physics_process(delta: float) -> void:
 	# Lock facing during run-jump so the one-shot doesn't mirror mid-cycle.
 	if sprite and current_anim == AnimState.RUN_JUMP:
 		sprite.flip_h = run_jump_face_left
+	elif sprite and current_anim == AnimState.WALK_JUMP:
+		sprite.flip_h = walk_jump_face_left
 	elif sprite and abs(velocity.x) > 0.1:
 		sprite.flip_h = velocity.x < 0.0
 
@@ -405,6 +489,52 @@ func _update_sprite_animation(delta: float) -> void:
 		if anim_frame >= RUN_JUMP_FRAME_COUNT - 1:
 			if is_on_floor() and run_jump_left_ground:
 				_finish_run_jump()
+		return
+
+	# Walk-jump one-shot (new connected walk-to-jump animation)
+	if current_anim == AnimState.WALK_JUMP:
+		if not is_on_floor():
+			walk_jump_left_ground = true
+
+		# CRITICAL FIX: Never show ground/crouch frames while we are actually airborne.
+		# Physics jump is instant. We must not wait for is_on_floor() to update.
+		# Use velocity.y > 0 (we are moving upward) as the reliable airborne signal.
+		var is_airborne_now := not is_on_floor() or velocity.y > 0.1
+		if walk_jump_left_ground and is_airborne_now and anim_frame < WALK_JUMP_AIR_START_FRAME:
+			anim_frame = WALK_JUMP_AIR_START_FRAME
+			anim_timer = 0.0
+
+		_apply_walk_jump_frame(anim_frame)
+
+		# Play the crouch anticipation frames VERY FAST (almost a blink).
+		# We want the player to see "he crouched to jump" without the feet appearing stuck on ground.
+		var effective_fps := WALK_JUMP_FPS
+		if anim_frame < WALK_JUMP_AIR_START_FRAME:
+			effective_fps = 60.0   # extremely fast — frames 3 and 4 together last ~0.033 seconds
+
+		anim_timer += delta
+		var frame_time := 1.0 / effective_fps
+		if anim_timer >= frame_time:
+			var steps := int(anim_timer / frame_time)
+			anim_timer -= steps * frame_time
+			anim_frame = mini(anim_frame + steps, WALK_JUMP_FRAME_COUNT - 1)
+			_apply_walk_jump_frame(anim_frame)
+
+		# Early land → go to last frames
+		if walk_jump_left_ground and is_on_floor():
+			if anim_frame < WALK_JUMP_FRAME_COUNT - 1:
+				anim_frame = WALK_JUMP_FRAME_COUNT - 1   # show frame 12 (on the ground)
+				_apply_walk_jump_frame(anim_frame)
+			if anim_frame >= WALK_JUMP_FRAME_COUNT - 1:
+				_finish_walk_jump()
+				return
+
+		if anim_frame >= WALK_JUMP_FRAME_COUNT - 1:
+			if is_on_floor() and walk_jump_left_ground:
+				_finish_walk_jump()
+			return
+
+		# IMPORTANT: prevent the locomotion state machine below from overriding the one-shot
 		return
 
 	# Horizontal speed only for ground locomotion.
@@ -510,6 +640,17 @@ func _set_anim_state(state: AnimState, force: bool = false) -> void:
 			# CRITICAL: region must be on BEFORE display, single 276x276 cell only.
 			sprite.region_enabled = true
 			_apply_run_jump_frame(0)
+		AnimState.WALK_JUMP:
+			if tex_walk_jump_sheet:
+				sprite.texture = tex_walk_jump_sheet
+			sprite.offset = Vector2.ZERO
+			sprite.centered = true
+			sprite.pixel_size = WALK_JUMP_PIXEL_SIZE
+			sprite.position = Vector3(0.0, WALK_JUMP_SPRITE_Y, 0.0)
+			sprite.region_enabled = true
+			# Respect the takeoff start frame (usually 2) so we begin showing the crouch immediately
+			var start_f := anim_frame if anim_frame > 0 else WALK_JUMP_TAKEOFF_START_FRAME
+			_apply_walk_jump_frame(start_f)
 
 
 func _apply_sheet_frame(frame_size: Vector2i, frame_index: int, columns: int = 1) -> void:
@@ -550,6 +691,24 @@ func _apply_run_jump_frame(frame_index: int) -> void:
 	)
 
 
+func _apply_walk_jump_frame(frame_index: int) -> void:
+	if sprite == null or tex_walk_jump_sheet == null:
+		return
+	frame_index = clampi(frame_index, 0, WALK_JUMP_FRAME_COUNT - 1)
+
+	# Use precomputed rects from the JSON (trimmed atlas, not uniform grid)
+	var rect: Rect2 = WALK_JUMP_FRAMES[frame_index]
+
+	if sprite.texture != tex_walk_jump_sheet:
+		sprite.texture = tex_walk_jump_sheet
+	sprite.centered = true
+	sprite.offset = Vector2.ZERO
+	sprite.pixel_size = WALK_JUMP_PIXEL_SIZE
+	sprite.position = Vector3(0.0, WALK_JUMP_SPRITE_Y, 0.0)
+	sprite.region_enabled = true
+	sprite.region_rect = rect
+
+
 func _sync_attack_hitbox() -> void:
 	if melee_hitbox == null:
 		return
@@ -580,6 +739,16 @@ func _finish_run_jump() -> void:
 	if planar_speed > 0.35 and Input.is_action_pressed("sprint") and current_stamina > 0.0:
 		_set_anim_state(AnimState.RUN, true)
 	elif planar_speed > 0.35:
+		_set_anim_state(AnimState.WALK, true)
+	else:
+		_set_anim_state(AnimState.IDLE, true)
+
+
+func _finish_walk_jump() -> void:
+	walk_jump_left_ground = false
+	# Return to walk or idle so the animation feels connected to normal locomotion.
+	var planar_speed := Vector2(velocity.x, velocity.z).length()
+	if planar_speed > 0.35:
 		_set_anim_state(AnimState.WALK, true)
 	else:
 		_set_anim_state(AnimState.IDLE, true)
