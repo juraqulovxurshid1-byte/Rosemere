@@ -261,7 +261,7 @@ text = "SP"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ManaBar" type="TextureProgressBar" parent="Control/HudPanel/VBoxContainer"]
+[node name="FocusBar" type="TextureProgressBar" parent="Control/HudPanel/VBoxContainer"]
 custom_minimum_size = Vector2(252, 16)
 layout_mode = 2
 size_flags_horizontal = 0
@@ -275,7 +275,7 @@ stretch_margin_bottom = 6
 texture_progress = ExtResource("6_mana_fill")
 texture_over = ExtResource("3_bar_frame")
 
-[node name="ManaText" type="Label" parent="Control/HudPanel/VBoxContainer/ManaBar"]
+[node name="FocusText" type="Label" parent="Control/HudPanel/VBoxContainer/FocusBar"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -287,7 +287,7 @@ theme_override_colors/font_outline_color = Color(0.0509804, 0.0392157, 0.0392157
 theme_override_constants/outline_size = 3
 theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 11
-text = "MP"
+text = "FP"
 horizontal_alignment = 1
 vertical_alignment = 1
 

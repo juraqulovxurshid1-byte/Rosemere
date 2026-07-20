@@ -1,0 +1,11 @@
+{
+  "meta": {
+    "image": "player_montante_attack_sheet.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 4385,
+      "h": 328
+    },
+    "note": "Montante attack 11-frame loop. Uniform 395x328 cells."
+  }
+}

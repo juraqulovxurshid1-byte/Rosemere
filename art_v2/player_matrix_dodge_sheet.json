@@ -1,0 +1,173 @@
+{
+  "frames": {
+    "frame_00": {
+      "frame": {
+        "x": 116,
+        "y": 318,
+        "w": 226,
+        "h": 411
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 226,
+        "h": 411
+      },
+      "sourceSize": {
+        "w": 226,
+        "h": 411
+      }
+    },
+    "frame_01": {
+      "frame": {
+        "x": 346,
+        "y": 358,
+        "w": 259,
+        "h": 371
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 259,
+        "h": 371
+      },
+      "sourceSize": {
+        "w": 259,
+        "h": 371
+      }
+    },
+    "frame_02": {
+      "frame": {
+        "x": 609,
+        "y": 401,
+        "w": 263,
+        "h": 328
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 263,
+        "h": 328
+      },
+      "sourceSize": {
+        "w": 263,
+        "h": 328
+      }
+    },
+    "frame_03": {
+      "frame": {
+        "x": 876,
+        "y": 410,
+        "w": 275,
+        "h": 320
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 275,
+        "h": 320
+      },
+      "sourceSize": {
+        "w": 275,
+        "h": 320
+      }
+    },
+    "frame_04": {
+      "frame": {
+        "x": 1155,
+        "y": 357,
+        "w": 227,
+        "h": 372
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 227,
+        "h": 372
+      },
+      "sourceSize": {
+        "w": 227,
+        "h": 372
+      }
+    },
+    "frame_05": {
+      "frame": {
+        "x": 1386,
+        "y": 338,
+        "w": 215,
+        "h": 391
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 215,
+        "h": 391
+      },
+      "sourceSize": {
+        "w": 215,
+        "h": 391
+      }
+    },
+    "frame_06": {
+      "frame": {
+        "x": 1605,
+        "y": 313,
+        "w": 215,
+        "h": 416
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 215,
+        "h": 416
+      },
+      "sourceSize": {
+        "w": 215,
+        "h": 416
+      }
+    },
+    "frame_07": {
+      "frame": {
+        "x": 1824,
+        "y": 321,
+        "w": 231,
+        "h": 408
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 231,
+        "h": 408
+      },
+      "sourceSize": {
+        "w": 231,
+        "h": 408
+      }
+    }
+  },
+  "meta": {
+    "image": "player_dodge_sheet.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 2172,
+      "h": 724
+    },
+    "note": "Matrix dodge 8-frame one-shot. 3:1 ratio. Ground-level, all frames bottom-aligned."
+  }
+}

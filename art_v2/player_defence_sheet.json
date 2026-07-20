@@ -1,0 +1,11 @@
+{
+  "meta": {
+    "image": "player_defence_sheet.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 3659,
+      "h": 418
+    },
+    "note": "Defence 9-frame one-shot. Uniform 403x418 cells. No canvas whitespace."
+  }
+}

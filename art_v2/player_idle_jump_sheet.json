@@ -1,0 +1,153 @@
+{
+  "frames": {
+    "frame_00": {
+      "frame": {
+        "x": 11,
+        "y": 333,
+        "w": 279,
+        "h": 314
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 279,
+        "h": 314
+      },
+      "sourceSize": {
+        "w": 279,
+        "h": 314
+      }
+    },
+    "frame_01": {
+      "frame": {
+        "x": 333,
+        "y": 130,
+        "w": 242,
+        "h": 514
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 242,
+        "h": 514
+      },
+      "sourceSize": {
+        "w": 242,
+        "h": 514
+      }
+    },
+    "frame_02": {
+      "frame": {
+        "x": 647,
+        "y": 100,
+        "w": 219,
+        "h": 394
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 219,
+        "h": 394
+      },
+      "sourceSize": {
+        "w": 219,
+        "h": 394
+      }
+    },
+    "frame_03": {
+      "frame": {
+        "x": 930,
+        "y": 50,
+        "w": 260,
+        "h": 316
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 260,
+        "h": 316
+      },
+      "sourceSize": {
+        "w": 260,
+        "h": 316
+      }
+    },
+    "frame_04": {
+      "frame": {
+        "x": 1244,
+        "y": 168,
+        "w": 237,
+        "h": 454
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 237,
+        "h": 454
+      },
+      "sourceSize": {
+        "w": 237,
+        "h": 454
+      }
+    },
+    "frame_05": {
+      "frame": {
+        "x": 1450,
+        "y": 384,
+        "w": 430,
+        "h": 265
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 430,
+        "h": 265
+      },
+      "sourceSize": {
+        "w": 430,
+        "h": 265
+      }
+    },
+    "frame_06": {
+      "frame": {
+        "x": 1861,
+        "y": 258,
+        "w": 214,
+        "h": 388
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 214,
+        "h": 388
+      },
+      "sourceSize": {
+        "w": 214,
+        "h": 388
+      }
+    }
+  },
+  "meta": {
+    "image": "player_idle_jump_sheet.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 2120,
+      "h": 742
+    },
+    "note": "Idle jump 7-frame one-shot. Frames positioned to follow jump arc (apex high, landing low). Cell aspect ratio ~2.86:1 (1060:371)."
+  }
+}

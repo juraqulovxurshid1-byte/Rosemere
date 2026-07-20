@@ -6,7 +6,10 @@ const HUD_TEXT_COLOR: Color = Color(0.690196, 0.552941, 0.341176, 1.0)
 
 @onready var health_bar: TextureProgressBar = $Control/HudPanel/VBoxContainer/HPBar
 @onready var stamina_bar: TextureProgressBar = $Control/HudPanel/VBoxContainer/StaminaBar
-@onready var mana_bar: TextureProgressBar = $Control/HudPanel/VBoxContainer/ManaBar
+@onready var focus_bar: TextureProgressBar = $Control/HudPanel/VBoxContainer/FocusBar
+@onready var health_text: Label = $Control/HudPanel/VBoxContainer/HPBar/HealthText
+@onready var stamina_text: Label = $Control/HudPanel/VBoxContainer/StaminaBar/StaminaText
+@onready var focus_text: Label = $Control/HudPanel/VBoxContainer/FocusBar/FocusText
 @onready var gold_label: Label = $Control/HudPanel/VBoxContainer/GoldRow/GoldLabel
 @onready var weapon_label: Label = $Control/HudPanel/VBoxContainer/WeaponRow/WeaponLabel
 @onready var quest_label: Label = $Control/HudPanel/VBoxContainer/QuestRow/QuestLabel
@@ -159,16 +162,22 @@ func update_health(current: float, max_val: float) -> void:
 	if health_bar:
 		health_bar.max_value = max_val
 		health_bar.value = current
+	if health_text:
+		health_text.text = str(int(current)) + " / " + str(int(max_val))
 
 func update_stamina(current: float, max_val: float) -> void:
 	if stamina_bar:
 		stamina_bar.max_value = max_val
 		stamina_bar.value = current
+	if stamina_text:
+		stamina_text.text = str(int(current)) + " / " + str(int(max_val))
 
-func update_mana(current: float, max_val: float) -> void:
-	if mana_bar:
-		mana_bar.max_value = max_val
-		mana_bar.value = current
+func update_focus(current: float, max_val: float) -> void:
+	if focus_bar:
+		focus_bar.max_value = max_val
+		focus_bar.value = current
+	if focus_text:
+		focus_text.text = str(int(current)) + " / " + str(int(max_val))
 
 func update_gold(amount: int) -> void:
 	if gold_label:

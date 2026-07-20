@@ -1,0 +1,11 @@
+{
+  "meta": {
+    "image": "player_hand_defence_sheet.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 2462,
+      "h": 370
+    },
+    "note": "Hand defence 6-frame one-shot. Uniform 407x370 cells. Frame 2 removed."
+  }
+}

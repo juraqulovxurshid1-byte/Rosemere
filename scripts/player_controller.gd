@@ -26,19 +26,25 @@ const WORLD_BOUNDARY_MARGIN := 0.6
 
 # --- COMBAT & STATS ---
 @export_group("Combat")
-@export var max_health: float = 100.0
+@export var max_health: float = 300.0
 @export var max_stamina: float = 100.0
-@export var max_mana: float = 100.0
+@export var max_focus: float = 100.0
 @export var attack_duration: float = 0.67
 @export var attack_damage: float = 25.0
 var current_health: float = max_health
 var current_stamina: float = max_stamina
-var current_mana: float = max_mana
+var current_focus: float = max_focus
 var gold_coins: int = 0
 var current_weapon_name: String = "Rusty Sword"
 var is_attacking: bool = false
-var has_quen_shield: bool = false
+var is_matrix_dodging: bool = false
+var is_defencing: bool = false
+var is_montante_attacking: bool = false
+var is_hand_defencing: bool = false
+var matrix_dodge_face_left: bool = false
 var current_speed: float = move_speed
+var stamina_regen_timer: float = 0.0
+var focus_regen_timer: float = 0.0
 
 # --- QUEST & XP ---
 @export_group("Quest & XP")
@@ -61,18 +67,27 @@ const RUN_SHEET_PATH := "res://art_v2/player_run_sheet.png"
 const ATTACK_SHEET_PATH := "res://art_v2/player_attack_sheet.png"
 const RUN_JUMP_SHEET_PATH := "res://art_v2/player_run_jump_sheet.png"
 const WALK_JUMP_SHEET_PATH := "res://art_v2/player_walk_jump_sheet.png"
+const IDLE_JUMP_SHEET_PATH := "res://art_v2/player_idle_jump_sheet.png"
+const MATRIX_DODGE_SHEET_PATH := "res://art_v2/player_matrix_dodge_sheet.png"
+const DEFENCE_SHEET_PATH := "res://art_v2/player_defence_sheet.png"
 
 const IDLE_FRAME_COUNT := 6
 const WALK_FRAME_COUNT := 8
 const RUN_FRAME_COUNT := 10
 const ATTACK_FRAME_COUNT := 10
-const RUN_JUMP_FRAME_COUNT := 13
+const RUN_JUMP_FRAME_COUNT := 9
 const WALK_JUMP_FRAME_COUNT := 13
-const RUN_JUMP_APEX_FRAME := 6  # peak pose
+const IDLE_JUMP_FRAME_COUNT := 7
+const MATRIX_DODGE_FRAME_COUNT := 8
+const DEFENCE_FRAME_COUNT := 9
+const DEFENCE_FRAME_SIZE := Vector2i(403, 418)
+const DEFENCE_COLUMNS := 9
+const RUN_JUMP_APEX_FRAME := 4  # peak pose
 const IDLE_FRAME_SIZE := Vector2i(328, 466)
 const WALK_FRAME_SIZE := Vector2i(640, 640)
 const RUN_FRAME_SIZE := Vector2i(640, 640)
-const ATTACK_FRAME_SIZE := Vector2i(596, 306)  # 5×2 anchor-aligned individual frames
+const ATTACK_FRAME_SIZE := Vector2i(596, 306)
+const IDLE_JUMP_FRAME_SIZE := Vector2i(303, 742)  # 5×2 anchor-aligned individual frames
 const RUN_JUMP_FRAME_SIZE := Vector2i(776, 700)  # ready sheet, body-locked
 const IDLE_COLUMNS := 6
 const WALK_COLUMNS := 8
@@ -84,10 +99,39 @@ const WALK_FPS := 10.0
 const RUN_FPS := 14.0
 # 10-frame overhead slash; ~0.67s total at 15 FPS (slightly longer read).
 const ATTACK_FPS := 15.0
-# Run-jump one-shot (~0.87s). Hold landing frames a touch longer in code.
-const RUN_JUMP_FPS := 14.0
-# Walk-jump one-shot (14 frames, walk-to-jump connected feel). ~1.08s at 13 FPS.
-const WALK_JUMP_FPS := 10.0  # slowed down from 13 → more natural walk-to-jump feel (~1.4s total)
+# Run-jump one-shot (9 frames, sprint_jump_velocity=6.6). ~1.48s total at 5.2 FPS.
+# Physics: sprint_jump_velocity=6.6, gravity=9.8 -> 1.3469s air time.
+# Frame 7 (Landing) at index 7: 7 x frame_time = 7/5.2 = 1.3462s <- exact match.
+const RUN_JUMP_FPS := 5.197
+# Walk-jump one-shot (13 frames). Frame 12 (grounded recovery) starts at exactly
+# the physics landing moment: 7 air frames x frame_time = total_air_time = 1.0612s.
+const WALK_JUMP_FPS := 6.6
+# Idle-jump one-shot (7 frames). ~1.49s total at 4.71 FPS.
+# Physics: jump_velocity=5.2, gravity=9.8 -> 1.0612s air time.
+# Frame 5 (Landing) at index 5: 5 x frame_time = 5/4.71 = 1.0612s <- exact match.
+const IDLE_JUMP_FPS := 4.71
+# Dodge one-shot (8 frames). ~0.57s total at 14 FPS (faster than attack's 0.67s).
+const MATRIX_DODGE_FPS := 14.0
+const DEFENCE_FPS := 8.0
+# Montante attack one-shot (14 frames). ~1.17s total at 12 FPS.
+# Held-channel: player must hold Alt+Left Click throughout.
+const MONTANTE_SHEET_PATH := "res://art_v2/player_montante_attack_sheet.png"
+const MONTANTE_FRAME_COUNT := 11
+const MONTANTE_LOOP_START := 3  # frames 0-2 windup, then loop from 3 to 10
+const MONTANTE_FPS := 6.0
+const MONTANTE_FRAME_SIZE := Vector2i(395, 328)
+const MONTANTE_COLUMNS := 11
+const MONTANTE_PIXEL_SIZE := 0.02381  # match idle body: 4.19u / 176px (frame 0 body width)
+const MONTANTE_FOCUS_DRAIN_RATE := 15.0  # focus drained per second while channeling
+const MONTANTE_HIT_FRAME_START := 5
+const MONTANTE_HIT_FRAME_END := 10
+# Hand defence one-shot (7 frames). Right Click. Half damage taken while active.
+const HAND_DEFENCE_SHEET_PATH := "res://art_v2/player_hand_defence_sheet.png"
+const HAND_DEFENCE_FRAME_COUNT := 6
+const HAND_DEFENCE_FPS := 10.0
+const HAND_DEFENCE_FRAME_SIZE := Vector2i(407, 370)
+const HAND_DEFENCE_COLUMNS := 7
+const HAND_DEFENCE_PIXEL_SIZE := 0.022  # compensate for hunched defence posture
 # Active hit frames: big sword arcs (poses 5–7, 0-based 4–6).
 const ATTACK_HIT_FRAME_START := 4
 const ATTACK_HIT_FRAME_END := 6
@@ -103,13 +147,23 @@ const RUN_SPRITE_Y := 3.604    # avg opaque feet ~row 619 on run sheet
 const ATTACK_PIXEL_SIZE := 0.03192
 const ATTACK_SPRITE_Y := 4.325
 # Run-jump strip cells 258px; match idle body height, feet bottom-aligned.
-const RUN_JUMP_PIXEL_SIZE := 0.01205  # == ANIM_PIXEL_SIZE (walk/run)
+# New 9-frame sheet at 3:1 ratio. Frames are ~214px wide; pixel_size scaled to
+# match RUN width (7.29 world units): 7.29 / 214 = 0.03407.
+const RUN_JUMP_PIXEL_SIZE := 0.03407
 const RUN_JUMP_SPRITE_Y := 4.091
 
 # Walk-jump sheet (first frame removed → 13 frames)
 # Clean single-row atlas. Body scale already tuned to match walk (0.0315).
 const WALK_JUMP_PIXEL_SIZE := 0.0315
 const WALK_JUMP_SPRITE_Y := 3.60
+const IDLE_JUMP_PIXEL_SIZE := 0.01747  # match IDLE_PIXEL_SIZE
+const IDLE_JUMP_SPRITE_Y := 3.852     # match IDLE_SPRITE_Y
+# Dodge sheet: 2172x724 (3:1), 8 frames. Pixel_size scaled to match RUN width.
+# Frame 0 content ~219px at 0.03329 = 7.29 world units (matches RUN).
+const MATRIX_DODGE_PIXEL_SIZE := 0.01747  # match IDLE_PIXEL_SIZE
+const MATRIX_DODGE_SPRITE_Y := 3.852  # same feet placement as idle
+const DEFENCE_PIXEL_SIZE := 0.01747  # match IDLE_PIXEL_SIZE
+const DEFENCE_SPRITE_Y := 3.852
 
 # Controls for "crouch before liftoff" feel without delaying the actual physics jump
 # Strategy:
@@ -146,7 +200,54 @@ const WALK_JUMP_FRAMES: Array[Rect2] = [
 	Rect2(18692, 20, 1550, 720),  # 12
 ]
 
-enum AnimState { IDLE, WALK, RUN, ATTACK, RUN_JUMP, WALK_JUMP }
+# Idle-jump frames: 7 frames laid out in a 2120x742 single-row atlas.
+# Frames are positioned to follow the jump arc naturally (apex high, landing low).
+# The centered=true sprite uses the center of each varying-size rect,
+# so the character rises and falls through the animation automatically.
+# Phase 1: Anticipation (frames 0-1) - crouch then launch
+# Phase 2: Ascent & Apex (frames 2-4) - rising, peak, falling
+# Phase 3: Impact & Recovery (frames 5-6) - landing, recover
+const IDLE_JUMP_FRAMES: Array[Rect2] = [
+	Rect2(11, 333, 279, 314),   # 0: crouch / wind-up
+	Rect2(333, 130, 242, 514),  # 1: launch / explode upward
+	Rect2(647, 100, 219, 394),  # 2: rising
+	Rect2(930, 50, 260, 316),   # 3: APEX / peak
+	Rect2(1244, 168, 237, 454), # 4: falling
+	Rect2(1450, 384, 430, 265), # 5: landing / impact
+	Rect2(1861, 258, 214, 388), # 6: recovery
+]
+
+# Run-jump frames: 9 frames on a 2172x724 canvas (3:1 ratio).
+# Each frame is tightly cropped to content + 8px padding, positioned to follow
+# the sprint-jump arc (launch low -> apex high -> land low).
+# Per-frame sprite.position.y = (rect.h / 2 - feet_from_bottom) * RUN_JUMP_PIXEL_SIZE
+# ensures feet always sit at y=0 ground level.
+const RUN_JUMP_FRAMES: Array[Rect2] = [
+	Rect2(81, 525, 221, 199),   # 0: launch
+	Rect2(306, 435, 256, 225),  # 1: rising
+	Rect2(566, 379, 236, 218),  # 2: rising
+	Rect2(806, 355, 227, 178),  # 3: rising
+	Rect2(1037, 252, 198, 218), # 4: APEX
+	Rect2(1239, 302, 186, 253), # 5: falling
+	Rect2(1429, 481, 247, 158), # 6: falling
+	Rect2(1680, 507, 223, 217), # 7: landing
+	Rect2(1907, 503, 183, 221), # 8: recovery
+]
+
+# Matrix dodge frames: 8 frames on a 2172x724 canvas (3:1 ratio).
+# Ground-level dodge back. All frames bottom-aligned (feet on ground).
+const MATRIX_DODGE_FRAMES: Array[Rect2] = [
+	Rect2(116, 318, 226, 411),  # 0
+	Rect2(346, 358, 259, 371),  # 1
+	Rect2(609, 401, 263, 328),  # 2
+	Rect2(876, 410, 275, 320),  # 3
+	Rect2(1155, 357, 227, 372), # 4
+	Rect2(1386, 338, 215, 391), # 5
+	Rect2(1605, 313, 215, 416), # 6
+	Rect2(1824, 321, 231, 408), # 7
+]
+
+enum AnimState { IDLE, WALK, RUN, ATTACK, RUN_JUMP, WALK_JUMP, IDLE_JUMP, MATRIX_DODGE, DEFENCE, MONTANTE, HAND_DEFENCE }
 
 var tex_idle: Texture2D = null
 var tex_idle_sheet: Texture2D = null
@@ -155,6 +256,11 @@ var tex_run_sheet: Texture2D = null
 var tex_attack_sheet: Texture2D = null
 var tex_run_jump_sheet: Texture2D = null
 var tex_walk_jump_sheet: Texture2D = null
+var tex_idle_jump_sheet: Texture2D = null
+var tex_matrix_dodge_sheet: Texture2D = null
+var tex_defence_sheet: Texture2D = null
+var tex_montante_sheet: Texture2D = null
+var tex_hand_defence_sheet: Texture2D = null
 var anim_timer: float = 0.0
 var anim_frame: int = 0
 var current_anim: AnimState = AnimState.IDLE
@@ -163,6 +269,8 @@ var run_jump_face_left: bool = false
 var run_jump_left_ground: bool = false
 var walk_jump_left_ground: bool = false
 var walk_jump_face_left: bool = false
+var idle_jump_left_ground: bool = false
+var idle_jump_face_left: bool = false
 var dialogue_ui: DialogueUI = null
 var hud: HUD = null
 
@@ -170,7 +278,7 @@ var hud: HUD = null
 func _ready() -> void:
 	current_health = max_health
 	current_stamina = max_stamina
-	current_mana = max_mana
+	current_focus = max_focus
 
 	_ensure_input_mappings()
 	_setup_sprite_animation()
@@ -194,16 +302,36 @@ func _setup_sprite_animation() -> void:
 	tex_attack_sheet = load(ATTACK_SHEET_PATH) as Texture2D
 	tex_run_jump_sheet = load(RUN_JUMP_SHEET_PATH) as Texture2D
 	tex_walk_jump_sheet = load(WALK_JUMP_SHEET_PATH) as Texture2D
+	tex_idle_jump_sheet = load(IDLE_JUMP_SHEET_PATH) as Texture2D
+	tex_matrix_dodge_sheet = load(MATRIX_DODGE_SHEET_PATH) as Texture2D
+	tex_defence_sheet = load(DEFENCE_SHEET_PATH) as Texture2D
+	tex_montante_sheet = load(MONTANTE_SHEET_PATH) as Texture2D
+	tex_hand_defence_sheet = load(HAND_DEFENCE_SHEET_PATH) as Texture2D
 
 	if tex_walk_jump_sheet == null:
 		push_error("CRITICAL: Failed to load walk-jump sheet: " + WALK_JUMP_SHEET_PATH)
 	else:
 		print("[Player] Successfully loaded walk-jump sheet: ", WALK_JUMP_SHEET_PATH)
 
+	if tex_idle_jump_sheet == null:
+		push_warning("Missing idle-jump sheet: " + IDLE_JUMP_SHEET_PATH)
+	else:
+		print("[Player] Loaded idle-jump sheet: ", IDLE_JUMP_SHEET_PATH)
+
 	if tex_run_jump_sheet == null:
 		push_warning("Missing run-jump sheet: " + RUN_JUMP_SHEET_PATH)
 	if tex_walk_jump_sheet == null:
 		push_warning("Missing walk-jump sheet: " + WALK_JUMP_SHEET_PATH)
+	if tex_idle_jump_sheet == null:
+		push_warning("Missing idle-jump sheet: " + IDLE_JUMP_SHEET_PATH)
+	if tex_matrix_dodge_sheet == null:
+		push_warning("Missing dodge sheet: " + MATRIX_DODGE_SHEET_PATH)
+	if tex_defence_sheet == null:
+		push_warning("Missing defence sheet: " + DEFENCE_SHEET_PATH)
+	if tex_montante_sheet == null:
+		push_warning("Missing montante sheet: " + MONTANTE_SHEET_PATH)
+	if tex_hand_defence_sheet == null:
+		push_warning("Missing hand defence sheet: " + HAND_DEFENCE_SHEET_PATH)
 
 	_set_anim_state(AnimState.IDLE, true)
 
@@ -215,8 +343,7 @@ func _ensure_input_mappings() -> void:
 		"move_right": [KEY_D, KEY_RIGHT],
 		"interact": [KEY_E],
 		"sprint": [KEY_SHIFT],
-		"cast_igni": [KEY_Q],
-		"cast_quen": [KEY_R]
+		"defence": [KEY_R]
 	}
 	for action in key_mappings:
 		if not InputMap.has_action(action):
@@ -242,8 +369,8 @@ func _find_ui() -> void:
 			hud.update_health(current_health, max_health)
 		if hud.has_method("update_stamina"):
 			hud.update_stamina(current_stamina, max_stamina)
-		if hud.has_method("update_mana"):
-			hud.update_mana(current_mana, max_mana)
+		if hud.has_method("update_focus"):
+			hud.update_focus(current_focus, max_focus)
 		if hud.has_method("update_gold"):
 			hud.update_gold(gold_coins)
 		if hud.has_method("update_weapon"):
@@ -257,8 +384,6 @@ func _play_sound(type: String, extra: String = "") -> void:
 		return
 	if type == "slash": sm.play_slash()
 	elif type == "coin": sm.play_coin()
-	elif type == "igni": sm.play_igni()
-	elif type == "quen": sm.play_quen()
 	elif type == "fanfare": sm.play_fanfare()
 	elif type == "voice": sm.play_voice(extra)
 
@@ -270,6 +395,33 @@ func stop_voice() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("interact"):
 		try_interact()
+	
+	# Montante Attack: Alt + Left Click (held channel)
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed and Input.is_key_pressed(KEY_ALT) and not is_montante_attacking and not is_attacking and not is_matrix_dodging and not is_defencing and is_on_floor():
+		if current_focus >= 10.0:
+			start_montante()
+		else:
+			if hud and hud.has_method("show_notification"):
+				hud.show_notification("Not enough Focus!", Color(0.3, 0.6, 1.0, 1))
+
+	# Matrix Dodge: Alt + Right Click
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed and Input.is_key_pressed(KEY_ALT) and not is_matrix_dodging and is_on_floor():
+		if current_focus >= 25.0:
+			start_matrix_dodge()
+		else:
+			if hud and hud.has_method("show_notification"):
+				hud.show_notification("Not enough Focus!", Color(0.3, 0.6, 1.0, 1))
+
+	# Hand Defence: Right Click (no Alt)
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed and not Input.is_key_pressed(KEY_ALT) and not is_hand_defencing and not is_attacking and not is_matrix_dodging and is_on_floor():
+		start_hand_defence()
+
+	if event.is_action_pressed("defence") and not is_defencing and is_on_floor():
+		if current_stamina >= 10.0:
+			start_defence()
+		else:
+			if hud and hud.has_method("show_notification"):
+				hud.show_notification("Not enough Stamina!", Color(1, 0.4, 0.4, 1))
 
 	if event.is_action_pressed("ui_cancel") and (not dialogue_ui or not dialogue_ui.is_open):
 		# Camera has no mouse-look, so keep the cursor visible. Esc only toggles
@@ -298,28 +450,46 @@ func _physics_process(delta: float) -> void:
 		velocity.y -= gravity * delta
 
 	# 2. Handle Combat / Attacking & Magic Signs
-	if Input.is_action_just_pressed("attack") and not is_attacking and is_on_floor():
+	if Input.is_action_just_pressed("attack") and not Input.is_key_pressed(KEY_ALT) and not is_attacking and not is_matrix_dodging and is_on_floor():
 		if current_stamina >= 15.0:
 			start_attack()
 		else:
 			if hud and hud.has_method("show_notification"):
 				hud.show_notification("Not enough Stamina!", Color(1, 0.4, 0.4, 1))
 
-	if Input.is_action_just_pressed("cast_igni") and not is_attacking and is_on_floor():
-		if current_mana >= 35.0:
-			cast_igni()
-		else:
-			if hud and hud.has_method("show_notification"):
-				hud.show_notification("Not enough Mana for Igni!", Color(0.3, 0.6, 1.0, 1))
 
-	if Input.is_action_just_pressed("cast_quen") and not is_attacking and is_on_floor():
-		if current_mana >= 40.0:
-			cast_quen()
+	# Montante held-channel: update animation + movement in physics
+	if is_montante_attacking:
+		if not Input.is_key_pressed(KEY_ALT) or not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+			_finish_montante()
 		else:
-			if hud and hud.has_method("show_notification"):
-				hud.show_notification("Not enough Mana for Quen!", Color(0.3, 0.6, 1.0, 1))
+			# Drain focus (15/sec) and stamina (7.5/sec, 1x slower)
+			current_focus = max(0.0, current_focus - MONTANTE_FOCUS_DRAIN_RATE * delta)
+			current_stamina = max(0.0, current_stamina - MONTANTE_FOCUS_DRAIN_RATE * 0.5 * delta)
+			stamina_regen_timer = 0.7
+			if hud and hud.has_method("update_focus"):
+				hud.update_focus(current_focus, max_focus)
+			if hud and hud.has_method("update_stamina"):
+				hud.update_stamina(current_stamina, max_stamina)
+			if current_focus <= 0 or current_stamina <= 0:
+				_finish_montante()
+			else:
+				# Advance montante animation — loop frames 3-10 forever
+				_apply_montante_frame(anim_frame)
+				anim_timer += delta
+				var ft := 1.0 / MONTANTE_FPS
+				if anim_timer >= ft:
+					var steps := int(anim_timer / ft)
+					anim_timer -= steps * ft
+					var next_frame := anim_frame + steps
+					# Loop: frames 0-2 play once (windup), then 3-10 loop
+					if next_frame > MONTANTE_FRAME_COUNT - 1:
+						next_frame = MONTANTE_LOOP_START + ((next_frame - MONTANTE_LOOP_START) % (MONTANTE_FRAME_COUNT - MONTANTE_LOOP_START))
+					anim_frame = next_frame
+					_apply_montante_frame(anim_frame)
+					_sync_montante_hitbox()
 
-	if is_attacking:
+	if is_attacking or is_matrix_dodging or is_defencing or is_hand_defencing:
 		velocity.x = move_toward(velocity.x, 0, acceleration * delta)
 		velocity.z = move_toward(velocity.z, 0, acceleration * delta)
 		_update_sprite_animation(delta)
@@ -330,7 +500,8 @@ func _physics_process(delta: float) -> void:
 	# 3. Handle Jump
 	# Sprint-jump: high pyramid arc + forward leap + full RUN_JUMP sheet.
 	# Idle/walk-jump: lower hop (no run-jump sheet yet).
-	if Input.is_action_just_pressed("ui_accept") and is_on_floor() and not is_attacking:
+	var is_in_jump_anim := current_anim == AnimState.RUN_JUMP or current_anim == AnimState.WALK_JUMP or current_anim == AnimState.IDLE_JUMP or current_anim == AnimState.MATRIX_DODGE or current_anim == AnimState.DEFENCE or current_anim == AnimState.HAND_DEFENCE
+	if not is_in_jump_anim and Input.is_action_just_pressed("ui_accept") and is_on_floor() and not is_attacking and not is_matrix_dodging and not is_defencing and not is_montante_attacking and not is_hand_defencing:
 		var planar := Vector2(velocity.x, velocity.z).length()
 		var move_input := Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
 		# Treat as sprint-jump if Shift is held and we are (or were) moving.
@@ -352,6 +523,12 @@ func _physics_process(delta: float) -> void:
 				velocity.x = boost_dir.x * target_planar
 				velocity.z = boost_dir.z * target_planar
 
+			# Sprint-jump drains stamina at higher rate (old sprint rate)
+			current_stamina = max(0.0, current_stamina - 20.0 * delta)
+			stamina_regen_timer = 0.7
+			if hud and hud.has_method("update_stamina"):
+				hud.update_stamina(current_stamina, max_stamina)
+
 			run_jump_face_left = sprite.flip_h if sprite else (velocity.x < 0.0)
 			run_jump_left_ground = false
 			anim_timer = 0.0
@@ -361,48 +538,74 @@ func _physics_process(delta: float) -> void:
 			if sprite:
 				sprite.flip_h = run_jump_face_left
 		else:
-			# WALK / IDLE JUMP using new walk-jump sheet (connected feel)
-			# Physics jump is INSTANT (combat responsive).
-			# We start the animation at the crouch (frame 2) but immediately fast-forward
-			# the visual to the air pose as soon as the character has left the ground.
-			print("[Player] Normal jump → WALK_JUMP (no Shift)")
-			velocity.y = jump_velocity
-			walk_jump_face_left = sprite.flip_h if sprite else (velocity.x < 0.0)
-			walk_jump_left_ground = false
-			anim_timer = 0.0
-			anim_frame = WALK_JUMP_TAKEOFF_START_FRAME   # begin with crouch pose (now 3)
-			print("[Jump] Normal (no sprint) jump triggered → WALK_JUMP state")
-			_set_anim_state(AnimState.WALK_JUMP, true)
-			_apply_walk_jump_frame(anim_frame)
-			if sprite:
-				sprite.flip_h = walk_jump_face_left
+			# Determine whether this is a walk jump (moving) or idle jump (standing still)
+			var move_input_jump := Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
+			var is_moving_for_jump := move_input_jump.length() > 0.35 or Vector2(velocity.x, velocity.z).length() > 0.35
 
-			# TEMP DEBUG notification — remove this block once confirmed working
-			if hud and hud.has_method("show_notification"):
-				hud.show_notification("WALK-JUMP ACTIVATED", Color(0.5, 1.0, 0.6, 1))
+			if is_moving_for_jump:
+				# WALK JUMP using walk-jump sheet (connected feel while moving)
+				# Physics jump is INSTANT (combat responsive).
+				print("[Player] Walk jump -> WALK_JUMP")
+				velocity.y = jump_velocity
+				walk_jump_face_left = sprite.flip_h if sprite else (velocity.x < 0.0)
+				walk_jump_left_ground = false
+				anim_timer = 0.0
+				anim_frame = WALK_JUMP_TAKEOFF_START_FRAME
+				print("[Jump] Walk jump (moving) -> WALK_JUMP state")
+				_set_anim_state(AnimState.WALK_JUMP, true)
+				_apply_walk_jump_frame(anim_frame)
+				if sprite:
+					sprite.flip_h = walk_jump_face_left
+			else:
+				# IDLE JUMP using idle-jump sheet (jump from standing still)
+				# 7-frame one-shot: crouch -> launch -> rise -> apex -> fall -> land -> recover
+				print("[Player] Idle jump -> IDLE_JUMP")
+				velocity.y = jump_velocity
+				idle_jump_face_left = sprite.flip_h if sprite else (velocity.x < 0.0)
+				idle_jump_left_ground = false
+				anim_timer = 0.0
+				anim_frame = 0
+				print("[Jump] Idle jump (standing) -> IDLE_JUMP state")
+				_set_anim_state(AnimState.IDLE_JUMP, true)
+				_apply_idle_jump_frame(0)
+				if sprite:
+					sprite.flip_h = idle_jump_face_left
 
-	# Do not let the normal locomotion state machine override jump one-shots
-	if current_anim == AnimState.RUN_JUMP or current_anim == AnimState.WALK_JUMP:
-		_update_sprite_animation(delta)
-		move_and_slide()
-		_clamp_to_world_bounds()
-		return
-
-	# 4. Handle Sprint, Stamina & Mana Regen
-	if Input.is_action_pressed("sprint") and velocity.length() > 0.5 and current_stamina > 0:
+	# Do not let the normal locomotion state machine override jump one-shots.
+	# But keep processing so stamina keeps draining during jumps.
+	# 4. Handle Sprint, Stamina & Focus Regen (with 0.7s delay like Dark Souls)
+	if is_montante_attacking:
+		current_speed = move_speed * 0.5  # slow walk during montante
+	elif Input.is_action_pressed("sprint") and velocity.length() > 0.5 and current_stamina > 0:
 		current_speed = sprint_speed
-		current_stamina = max(0.0, current_stamina - 20.0 * delta)
+		current_stamina = max(0.0, current_stamina - 10.0 * delta)
+		stamina_regen_timer = 0.7
 	else:
 		current_speed = move_speed
-		current_stamina = min(max_stamina, current_stamina + 15.0 * delta)
+		if stamina_regen_timer > 0:
+			stamina_regen_timer -= delta
+		else:
+			current_stamina = min(max_stamina, current_stamina + 8.0 * delta)
 
-	current_mana = min(max_mana, current_mana + 12.0 * delta)
+	# Don't regen focus during montante — the drain handles it
+	if not is_montante_attacking:
+		if focus_regen_timer > 0:
+			focus_regen_timer -= delta
+		else:
+			current_focus = min(max_focus, current_focus + 8.0 * delta)
 
 	if hud:
 		if hud.has_method("update_stamina"):
 			hud.update_stamina(current_stamina, max_stamina)
-		if hud.has_method("update_mana"):
-			hud.update_mana(current_mana, max_mana)
+		if hud.has_method("update_focus"):
+			hud.update_focus(current_focus, max_focus)
+
+	# Skip movement input during jump animations — stamina already processed above
+	if is_in_jump_anim:
+		_update_sprite_animation(delta)
+		move_and_slide()
+		_clamp_to_world_bounds()
+		return
 
 	# 5. Movement in World Cardinal Directions
 	# Player NEVER rotates - always faces camera (Cult of the Lamb style)
@@ -431,6 +634,16 @@ func _physics_process(delta: float) -> void:
 		sprite.flip_h = run_jump_face_left
 	elif sprite and current_anim == AnimState.WALK_JUMP:
 		sprite.flip_h = walk_jump_face_left
+	elif sprite and current_anim == AnimState.IDLE_JUMP:
+		sprite.flip_h = idle_jump_face_left
+	elif sprite and current_anim == AnimState.MATRIX_DODGE:
+		sprite.flip_h = matrix_dodge_face_left
+	elif sprite and current_anim == AnimState.DEFENCE:
+		sprite.flip_h = velocity.x < 0.0
+	elif sprite and current_anim == AnimState.MONTANTE:
+		sprite.flip_h = velocity.x < 0.0
+	elif sprite and current_anim == AnimState.HAND_DEFENCE:
+		sprite.flip_h = velocity.x < 0.0
 	elif sprite and abs(velocity.x) > 0.1:
 		sprite.flip_h = velocity.x < 0.0
 
@@ -489,6 +702,89 @@ func _update_sprite_animation(delta: float) -> void:
 		if anim_frame >= RUN_JUMP_FRAME_COUNT - 1:
 			if is_on_floor() and run_jump_left_ground:
 				_finish_run_jump()
+		return
+
+	# Idle-jump one-shot: 7-frame sequence (standing jump)
+	if current_anim == AnimState.IDLE_JUMP:
+		if not is_on_floor():
+			idle_jump_left_ground = true
+
+		# Always keep correct texture/region bound
+		_apply_idle_jump_frame(anim_frame)
+
+		anim_timer += delta
+		var frame_time := 1.0 / IDLE_JUMP_FPS
+		if anim_timer >= frame_time:
+			var steps := int(anim_timer / frame_time)
+			anim_timer -= steps * frame_time
+			anim_frame = mini(anim_frame + steps, IDLE_JUMP_FRAME_COUNT - 1)
+			_apply_idle_jump_frame(anim_frame)
+
+		# Early land: skip to landing/recover frames
+		if idle_jump_left_ground and is_on_floor():
+			var land_start := IDLE_JUMP_FRAME_COUNT - 2  # show landing frame
+			if anim_frame < land_start:
+				anim_frame = land_start
+				_apply_idle_jump_frame(anim_frame)
+			if anim_frame >= IDLE_JUMP_FRAME_COUNT - 1:
+				_finish_idle_jump()
+				return
+
+		if anim_frame >= IDLE_JUMP_FRAME_COUNT - 1:
+			if is_on_floor() and idle_jump_left_ground:
+				_finish_idle_jump()
+		return
+
+	# Dodge one-shot: 8-frame sequence
+	if current_anim == AnimState.MATRIX_DODGE:
+		_apply_matrix_dodge_frame(anim_frame)
+
+		anim_timer += delta
+		var frame_time := 1.0 / MATRIX_DODGE_FPS
+		if anim_timer >= frame_time:
+			var steps := int(anim_timer / frame_time)
+			anim_timer -= steps * frame_time
+			anim_frame = mini(anim_frame + steps, MATRIX_DODGE_FRAME_COUNT - 1)
+			_apply_matrix_dodge_frame(anim_frame)
+
+		if anim_frame >= MATRIX_DODGE_FRAME_COUNT - 1:
+			_finish_matrix_dodge()
+		return
+
+	# Defence one-shot: 9-frame sequence
+	if current_anim == AnimState.DEFENCE:
+		_apply_defence_frame(anim_frame)
+
+		anim_timer += delta
+		var frame_time := 1.0 / DEFENCE_FPS
+		if anim_timer >= frame_time:
+			var steps := int(anim_timer / frame_time)
+			anim_timer -= steps * frame_time
+			anim_frame = mini(anim_frame + steps, DEFENCE_FRAME_COUNT - 1)
+			_apply_defence_frame(anim_frame)
+
+		if anim_frame >= DEFENCE_FRAME_COUNT - 1:
+			_finish_defence()
+		return
+
+	# Hand defence one-shot: 7-frame sequence
+	if current_anim == AnimState.HAND_DEFENCE:
+		_apply_hand_defence_frame(anim_frame)
+
+		anim_timer += delta
+		var frame_time := 1.0 / HAND_DEFENCE_FPS
+		if anim_timer >= frame_time:
+			var steps := int(anim_timer / frame_time)
+			anim_timer -= steps * frame_time
+			anim_frame = mini(anim_frame + steps, HAND_DEFENCE_FRAME_COUNT - 1)
+			_apply_hand_defence_frame(anim_frame)
+
+		if anim_frame >= HAND_DEFENCE_FRAME_COUNT - 1:
+			_finish_hand_defence()
+		return
+
+	# Montante: handled in _physics_process, just guard against locomotion override
+	if current_anim == AnimState.MONTANTE:
 		return
 
 	# Walk-jump one-shot (new connected walk-to-jump animation)
@@ -636,8 +932,7 @@ func _set_anim_state(state: AnimState, force: bool = false) -> void:
 			sprite.offset = Vector2.ZERO
 			sprite.centered = true
 			sprite.pixel_size = RUN_JUMP_PIXEL_SIZE
-			sprite.position = Vector3(0.0, RUN_JUMP_SPRITE_Y, 0.0)
-			# CRITICAL: region must be on BEFORE display, single 276x276 cell only.
+			# Per-frame Y position set in _apply_run_jump_frame()
 			sprite.region_enabled = true
 			_apply_run_jump_frame(0)
 		AnimState.WALK_JUMP:
@@ -651,6 +946,49 @@ func _set_anim_state(state: AnimState, force: bool = false) -> void:
 			# Respect the takeoff start frame (usually 2) so we begin showing the crouch immediately
 			var start_f := anim_frame if anim_frame > 0 else WALK_JUMP_TAKEOFF_START_FRAME
 			_apply_walk_jump_frame(start_f)
+		AnimState.IDLE_JUMP:
+			if tex_idle_jump_sheet:
+				sprite.texture = tex_idle_jump_sheet
+			sprite.offset = Vector2.ZERO
+			sprite.centered = true
+			sprite.pixel_size = IDLE_JUMP_PIXEL_SIZE
+			sprite.position = Vector3(0.0, IDLE_JUMP_SPRITE_Y, 0.0)
+			sprite.region_enabled = true
+			_apply_idle_jump_frame(0)
+		AnimState.MATRIX_DODGE:
+			if tex_matrix_dodge_sheet:
+				sprite.texture = tex_matrix_dodge_sheet
+			sprite.offset = Vector2.ZERO
+			sprite.centered = true
+			sprite.pixel_size = MATRIX_DODGE_PIXEL_SIZE
+			# Per-frame Y position set in _apply_matrix_dodge_frame()
+			sprite.region_enabled = true
+			_apply_matrix_dodge_frame(0)
+		AnimState.DEFENCE:
+			if tex_defence_sheet:
+				sprite.texture = tex_defence_sheet
+			sprite.offset = Vector2.ZERO
+			sprite.centered = true
+			sprite.pixel_size = DEFENCE_PIXEL_SIZE
+			sprite.region_enabled = true
+			_apply_defence_frame(0)
+		AnimState.MONTANTE:
+			if tex_montante_sheet:
+				sprite.texture = tex_montante_sheet
+			sprite.offset = Vector2.ZERO
+			sprite.centered = true
+			sprite.pixel_size = MONTANTE_PIXEL_SIZE
+			sprite.region_enabled = true
+			_apply_montante_frame(0)
+		AnimState.HAND_DEFENCE:
+			if tex_hand_defence_sheet:
+				sprite.texture = tex_hand_defence_sheet
+			sprite.offset = Vector2.ZERO
+			sprite.centered = true
+			sprite.pixel_size = HAND_DEFENCE_PIXEL_SIZE
+			sprite.position = Vector3(0.0, (HAND_DEFENCE_FRAME_SIZE.y / 2.0 - 4.0) * HAND_DEFENCE_PIXEL_SIZE, 0.0)
+			sprite.region_enabled = true
+			_apply_hand_defence_frame(0)
 
 
 func _apply_sheet_frame(frame_size: Vector2i, frame_index: int, columns: int = 1) -> void:
@@ -675,20 +1013,121 @@ func _apply_run_jump_frame(frame_index: int) -> void:
 	if tex_run_jump_sheet == null:
 		return
 	frame_index = clampi(frame_index, 0, RUN_JUMP_FRAME_COUNT - 1)
-	# Same pipeline as walk/run: one sheet, crop exactly one cell.
+
+	# Use individual precomputed rects (tight crops + Y-arc positioning)
+	var rect: Rect2 = RUN_JUMP_FRAMES[frame_index]
+
 	if sprite.texture != tex_run_jump_sheet:
 		sprite.texture = tex_run_jump_sheet
 	sprite.centered = true
 	sprite.offset = Vector2.ZERO
 	sprite.pixel_size = RUN_JUMP_PIXEL_SIZE
-	sprite.position = Vector3(0.0, RUN_JUMP_SPRITE_Y, 0.0)
+	# Per-frame Y: feet are 4px from bottom of each rect.
+	# (rect.h / 2 - 4) * pixel_size puts feet at y=0.
+	sprite.position = Vector3(0.0, (rect.size.y / 2.0 - 4.0) * RUN_JUMP_PIXEL_SIZE, 0.0)
 	sprite.region_enabled = true
-	sprite.region_rect = Rect2(
-		frame_index * RUN_JUMP_FRAME_SIZE.x,
-		0,
-		RUN_JUMP_FRAME_SIZE.x,
-		RUN_JUMP_FRAME_SIZE.y
+	sprite.region_rect = rect
+
+
+func _apply_matrix_dodge_frame(frame_index: int) -> void:
+	if sprite == null:
+		return
+	if tex_matrix_dodge_sheet == null:
+		return
+	frame_index = clampi(frame_index, 0, MATRIX_DODGE_FRAME_COUNT - 1)
+
+	var rect: Rect2 = MATRIX_DODGE_FRAMES[frame_index]
+
+	if sprite.texture != tex_matrix_dodge_sheet:
+		sprite.texture = tex_matrix_dodge_sheet
+	sprite.centered = true
+	sprite.offset = Vector2.ZERO
+	sprite.pixel_size = MATRIX_DODGE_PIXEL_SIZE
+	# Per-frame Y: feet are ~5px from bottom of each rect.
+	# (rect.h / 2 - 5) * pixel_size puts feet at y=0.
+	sprite.position = Vector3(0.0, (rect.size.y / 2.0 - 5.0) * MATRIX_DODGE_PIXEL_SIZE, 0.0)
+	sprite.region_enabled = true
+	sprite.region_rect = rect
+
+
+func _apply_montante_frame(frame_index: int) -> void:
+	if sprite == null:
+		return
+	if tex_montante_sheet == null:
+		return
+	frame_index = clampi(frame_index, 0, MONTANTE_FRAME_COUNT - 1)
+	if sprite.texture != tex_montante_sheet:
+		sprite.texture = tex_montante_sheet
+	sprite.centered = true
+	sprite.offset = Vector2.ZERO
+	sprite.pixel_size = MONTANTE_PIXEL_SIZE
+	# Feet are at bottom of uniform cell (8px padding from bottom)
+	sprite.position = Vector3(0.0, (MONTANTE_FRAME_SIZE.y / 2.0 - 4.0) * MONTANTE_PIXEL_SIZE, 0.0)
+	sprite.region_enabled = true
+	sprite.region_rect = Rect2(frame_index * (MONTANTE_FRAME_SIZE.x + 4), 0, MONTANTE_FRAME_SIZE.x, MONTANTE_FRAME_SIZE.y)
+
+
+func _sync_montante_hitbox() -> void:
+	if melee_hitbox == null:
+		return
+	var active := (
+		current_anim == AnimState.MONTANTE
+		and anim_frame >= MONTANTE_HIT_FRAME_START
+		and anim_frame <= MONTANTE_HIT_FRAME_END
 	)
+	melee_hitbox.monitoring = active
+
+
+func _apply_hand_defence_frame(frame_index: int) -> void:
+	if sprite == null:
+		return
+	if tex_hand_defence_sheet == null:
+		return
+	frame_index = clampi(frame_index, 0, HAND_DEFENCE_FRAME_COUNT - 1)
+	if sprite.texture != tex_hand_defence_sheet:
+		sprite.texture = tex_hand_defence_sheet
+	sprite.centered = true
+	sprite.offset = Vector2.ZERO
+	sprite.pixel_size = HAND_DEFENCE_PIXEL_SIZE
+	sprite.position = Vector3(0.0, (HAND_DEFENCE_FRAME_SIZE.y / 2.0 - 4.0) * HAND_DEFENCE_PIXEL_SIZE, 0.0)
+	sprite.region_enabled = true
+	sprite.region_rect = Rect2(frame_index * (HAND_DEFENCE_FRAME_SIZE.x + 4), 0, HAND_DEFENCE_FRAME_SIZE.x, HAND_DEFENCE_FRAME_SIZE.y)
+
+
+func _apply_defence_frame(frame_index: int) -> void:
+	if sprite == null:
+		return
+	if tex_defence_sheet == null:
+		return
+	frame_index = clampi(frame_index, 0, DEFENCE_FRAME_COUNT - 1)
+	if sprite.texture != tex_defence_sheet:
+		sprite.texture = tex_defence_sheet
+	sprite.centered = true
+	sprite.offset = Vector2.ZERO
+	sprite.pixel_size = DEFENCE_PIXEL_SIZE
+	sprite.position = Vector3(0.0, (DEFENCE_FRAME_SIZE.y / 2.0 - 6.0) * DEFENCE_PIXEL_SIZE, 0.0)
+	sprite.region_enabled = true
+	sprite.region_rect = Rect2(frame_index * (DEFENCE_FRAME_SIZE.x + 4), 0, DEFENCE_FRAME_SIZE.x, DEFENCE_FRAME_SIZE.y)
+
+
+func _apply_idle_jump_frame(frame_index: int) -> void:
+	if sprite == null or tex_idle_jump_sheet == null:
+		return
+	frame_index = clampi(frame_index, 0, IDLE_JUMP_FRAME_COUNT - 1)
+
+	# Use precomputed rects - each frame has its own position and size
+	# so the character naturally rises and falls through the jump arc
+	# via the varying center point of each rect.
+	var rect: Rect2 = IDLE_JUMP_FRAMES[frame_index]
+
+	if sprite.texture != tex_idle_jump_sheet:
+		sprite.texture = tex_idle_jump_sheet
+	sprite.centered = true
+	sprite.offset = Vector2.ZERO
+	sprite.pixel_size = IDLE_JUMP_PIXEL_SIZE
+	sprite.position = Vector3(0.0, IDLE_JUMP_SPRITE_Y, 0.0)
+	sprite.region_enabled = true
+	sprite.region_rect = rect
 
 
 func _apply_walk_jump_frame(frame_index: int) -> void:
@@ -754,6 +1193,32 @@ func _finish_walk_jump() -> void:
 		_set_anim_state(AnimState.IDLE, true)
 
 
+func _finish_matrix_dodge() -> void:
+	is_matrix_dodging = false
+	_set_anim_state(AnimState.IDLE, true)
+
+func _finish_defence() -> void:
+	is_defencing = false
+	_set_anim_state(AnimState.IDLE, true)
+
+func _finish_hand_defence() -> void:
+	is_hand_defencing = false
+	_set_anim_state(AnimState.IDLE, true)
+
+
+func _finish_montante() -> void:
+	is_montante_attacking = false
+	if melee_hitbox:
+		melee_hitbox.monitoring = false
+	_set_anim_state(AnimState.IDLE, true)
+
+
+func _finish_idle_jump() -> void:
+	idle_jump_left_ground = false
+	# Return to idle - the player jumped from standing still.
+	_set_anim_state(AnimState.IDLE, true)
+
+
 func _clamp_to_world_bounds() -> void:
 	var min_x := WORLD_MIN_X + WORLD_BOUNDARY_MARGIN
 	var max_x := WORLD_MAX_X - WORLD_BOUNDARY_MARGIN
@@ -775,38 +1240,6 @@ func _clamp_to_world_bounds() -> void:
 		velocity.x = 0.0
 	if (old_position.z < min_z and velocity.z < 0.0) or (old_position.z > max_z and velocity.z > 0.0):
 		velocity.z = 0.0
-
-# --- WITCHER MAGIC SIGNS (AoE - hits all around, no directional cone) ---
-func cast_igni() -> void:
-	current_mana = max(0.0, current_mana - 35.0)
-	print("[Magic] Casting IGNI (Fireblast)!")
-	_play_sound("igni")
-	if hud and hud.has_method("show_notification"):
-		hud.show_notification("🔥 IGNI FIREBLAST CAST!", Color(1.0, 0.4, 0.1, 1))
-
-	# AoE burst - hits ALL enemies within 7 units (360 degrees)
-	var all_enemies := get_tree().root.find_children("*", "CharacterBody3D", true, false)
-	for enemy in all_enemies:
-		if (enemy is EnemyAI or enemy is BossTroll) and not enemy.is_dead:
-			var dist: float = global_position.distance_to(enemy.global_position)
-			if dist <= 7.0:
-				print("[Magic] Igni burned: ", enemy.enemy_name)
-				enemy.take_damage(45.0)
-
-	if sprite:
-		var tween := create_tween()
-		tween.tween_property(sprite, "modulate", Color(1.0, 0.3, 0.0, 1), 0.15)
-		tween.tween_property(sprite, "modulate", Color(1, 1, 1, 1), 0.15)
-
-func cast_quen() -> void:
-	current_mana = max(0.0, current_mana - 40.0)
-	has_quen_shield = true
-	print("[Magic] Casting QUEN (Magic Shield)!")
-	_play_sound("quen")
-	if hud and hud.has_method("show_notification"):
-		hud.show_notification("🛡️ QUEN SHIELD ACTIVE! Absorbs next hit!", Color(1.0, 0.9, 0.2, 1))
-	if sprite:
-		sprite.modulate = Color(1.0, 0.9, 0.3, 1)
 
 # --- INTERACTION LOGIC ---
 func try_interact() -> void:
@@ -866,12 +1299,63 @@ func try_interact() -> void:
 		hud.show_notification("Nothing in reach to interact with!", Color(1, 0.7, 0.2, 1))
 
 # --- COMBAT FUNCTIONS ---
+func start_matrix_dodge() -> void:
+	is_matrix_dodging = true
+	matrix_dodge_face_left = sprite.flip_h if sprite else false
+	current_focus = max(0.0, current_focus - 25.0)
+	if hud and hud.has_method("update_focus"):
+		hud.update_focus(current_focus, max_focus)
+	focus_regen_timer = 0.7
+	anim_timer = 0.0
+	anim_frame = 0
+	print("[Player] Matrix Dodge!")
+	_set_anim_state(AnimState.MATRIX_DODGE, true)
+	_apply_matrix_dodge_frame(0)
+	if sprite:
+		sprite.flip_h = matrix_dodge_face_left
+
+
+func start_defence() -> void:
+	is_defencing = true
+	current_stamina = max(0.0, current_stamina - 10.0)
+	if hud and hud.has_method("update_stamina"):
+		hud.update_stamina(current_stamina, max_stamina)
+	stamina_regen_timer = 0.7
+	anim_timer = 0.0
+	anim_frame = 0
+	print("[Player] Defence!")
+	_set_anim_state(AnimState.DEFENCE, true)
+	_apply_defence_frame(0)
+
+
+func start_hand_defence() -> void:
+	is_hand_defencing = true
+	anim_timer = 0.0
+	anim_frame = 0
+	print("[Player] Hand defence!")
+	_set_anim_state(AnimState.HAND_DEFENCE, true)
+	_apply_hand_defence_frame(0)
+
+
+func start_montante() -> void:
+	is_montante_attacking = true
+	focus_regen_timer = 0.7
+	anim_timer = 0.0
+	anim_frame = 0
+	print("[Player] Montante attack!")
+	_set_anim_state(AnimState.MONTANTE, true)
+	_apply_montante_frame(0)
+	if melee_hitbox:
+		melee_hitbox.monitoring = false
+
+
 func start_attack() -> void:
 	is_attacking = true
 	_play_sound("slash")
 	current_stamina = max(0.0, current_stamina - 15.0)
 	if hud and hud.has_method("update_stamina"):
 		hud.update_stamina(current_stamina, max_stamina)
+	stamina_regen_timer = 0.7
 
 	print("Swinging sword/axe! (Attack initiated)")
 
@@ -915,18 +1399,9 @@ func take_damage(amount: float) -> void:
 	var feedback = _get_combat_feedback()
 	var impact_pos := global_position + Vector3(0, 1.15, 0)
 
-	if has_quen_shield:
-		has_quen_shield = false
-		print("[Magic] Quen Shield absorbed the attack!")
-		if feedback:
-			feedback.spawn_floating_text("BLOCK", impact_pos + Vector3(0, 0.65, 0), Color(1.0, 0.9, 0.25, 1), 58, 1.2)
-			feedback.spawn_impact_effect(impact_pos, Color(1.0, 0.9, 0.25, 1), 0.72, 9)
-			feedback.screen_shake(0.11, 0.12)
-		if hud and hud.has_method("show_notification"):
-			hud.show_notification("✨ Quen Shield Absorbed " + str(amount) + " Dmg!", Color(1.0, 0.9, 0.2, 1))
-		if sprite:
-			sprite.modulate = Color(1, 1, 1, 1)
-		return
+	# Hand defence halves incoming damage
+	if is_hand_defencing:
+		amount = amount * 0.5
 
 	current_health = max(0.0, current_health - amount)
 	print("[Player] OUCH! Took ", amount, " damage from enemy! Health remaining: ", current_health)
@@ -950,15 +1425,14 @@ func take_damage(amount: float) -> void:
 		global_position = Vector3(0, 0.5, 5)
 		current_health = max_health
 		current_stamina = max_stamina
-		current_mana = max_mana
-		has_quen_shield = false
+		current_focus = max_focus
 		if hud:
 			if hud.has_method("update_health"):
 				hud.update_health(current_health, max_health)
 			if hud.has_method("update_stamina"):
 				hud.update_stamina(current_stamina, max_stamina)
-			if hud.has_method("update_mana"):
-				hud.update_mana(current_mana, max_mana)
+			if hud.has_method("update_focus"):
+				hud.update_focus(current_focus, max_focus)
 
 func take_healing(amount: float) -> void:
 	var old_hp := current_health
@@ -1008,8 +1482,8 @@ func level_up() -> void:
 	current_health = max_health
 	max_stamina += 25.0
 	current_stamina = max_stamina
-	max_mana += 25.0
-	current_mana = max_mana
+	max_focus += 25.0
+	current_focus = max_focus
 	print("[Player] LEVELED UP! Now Level ", player_level)
 	_play_sound("fanfare")
 	if hud:
@@ -1017,7 +1491,7 @@ func level_up() -> void:
 			hud.update_health(current_health, max_health)
 		if hud.has_method("update_stamina"):
 			hud.update_stamina(current_stamina, max_stamina)
-		if hud.has_method("update_mana"):
-			hud.update_mana(current_mana, max_mana)
+		if hud.has_method("update_focus"):
+			hud.update_focus(current_focus, max_focus)
 		if hud.has_method("show_notification"):
-			hud.show_notification("✨ LEVEL UP! HP, Stamina & Mana Boosted!", Color(0.3, 1.0, 0.4, 1))
+			hud.show_notification("✨ LEVEL UP! HP, Stamina & Focus Boosted!", Color(0.3, 1.0, 0.4, 1))

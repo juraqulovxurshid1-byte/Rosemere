@@ -1,0 +1,92 @@
+{
+  "frames": {
+    "frame_00": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 555,
+        "h": 643
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 555,
+        "h": 643
+      },
+      "sourceSize": {
+        "w": 555,
+        "h": 643
+      }
+    },
+    "frame_01": {
+      "frame": {
+        "x": 559,
+        "y": 0,
+        "w": 555,
+        "h": 643
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 555,
+        "h": 643
+      },
+      "sourceSize": {
+        "w": 555,
+        "h": 643
+      }
+    },
+    "frame_02": {
+      "frame": {
+        "x": 1118,
+        "y": 0,
+        "w": 555,
+        "h": 643
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 555,
+        "h": 643
+      },
+      "sourceSize": {
+        "w": 555,
+        "h": 643
+      }
+    },
+    "frame_03": {
+      "frame": {
+        "x": 1677,
+        "y": 0,
+        "w": 555,
+        "h": 643
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 555,
+        "h": 643
+      },
+      "sourceSize": {
+        "w": 555,
+        "h": 643
+      }
+    }
+  },
+  "meta": {
+    "image": "vfx_parry_shield_sheet.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 2232,
+      "h": 643
+    }
+  }
+}

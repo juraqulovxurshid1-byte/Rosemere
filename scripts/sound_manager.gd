@@ -7,8 +7,6 @@ class_name SoundManager
 
 var stream_slash: AudioStream = null
 var stream_coin: AudioStream = null
-var stream_igni: AudioStream = null
-var stream_quen: AudioStream = null
 var stream_fanfare: AudioStream = null
 
 var voice_gareth: AudioStream = null
@@ -27,10 +25,6 @@ func _ready() -> void:
 		stream_slash = load("res://audio/slash.wav") as AudioStream
 	if ResourceLoader.exists("res://audio/coin.wav"):
 		stream_coin = load("res://audio/coin.wav") as AudioStream
-	if ResourceLoader.exists("res://audio/igni.wav"):
-		stream_igni = load("res://audio/igni.wav") as AudioStream
-	if ResourceLoader.exists("res://audio/quen.wav"):
-		stream_quen = load("res://audio/quen.wav") as AudioStream
 	if ResourceLoader.exists("res://audio/fanfare.wav"):
 		stream_fanfare = load("res://audio/fanfare.wav") as AudioStream
 		
@@ -71,12 +65,6 @@ func play_slash() -> void:
 
 func play_coin() -> void:
 	_play_sfx(stream_coin, 0.05)
-
-func play_igni() -> void:
-	_play_sfx(stream_igni, 0.1)
-
-func play_quen() -> void:
-	_play_sfx(stream_quen, 0.05)
 
 func play_fanfare() -> void:
 	_play_sfx(stream_fanfare, 0.0)

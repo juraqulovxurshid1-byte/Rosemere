@@ -1,0 +1,193 @@
+{
+  "frames": {
+    "frame_00": {
+      "frame": {
+        "x": 81,
+        "y": 525,
+        "w": 221,
+        "h": 199
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 221,
+        "h": 199
+      },
+      "sourceSize": {
+        "w": 221,
+        "h": 199
+      }
+    },
+    "frame_01": {
+      "frame": {
+        "x": 306,
+        "y": 435,
+        "w": 256,
+        "h": 225
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 225
+      },
+      "sourceSize": {
+        "w": 256,
+        "h": 225
+      }
+    },
+    "frame_02": {
+      "frame": {
+        "x": 566,
+        "y": 379,
+        "w": 236,
+        "h": 218
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 236,
+        "h": 218
+      },
+      "sourceSize": {
+        "w": 236,
+        "h": 218
+      }
+    },
+    "frame_03": {
+      "frame": {
+        "x": 806,
+        "y": 355,
+        "w": 227,
+        "h": 178
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 227,
+        "h": 178
+      },
+      "sourceSize": {
+        "w": 227,
+        "h": 178
+      }
+    },
+    "frame_04": {
+      "frame": {
+        "x": 1037,
+        "y": 252,
+        "w": 198,
+        "h": 218
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 198,
+        "h": 218
+      },
+      "sourceSize": {
+        "w": 198,
+        "h": 218
+      }
+    },
+    "frame_05": {
+      "frame": {
+        "x": 1239,
+        "y": 302,
+        "w": 186,
+        "h": 253
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 186,
+        "h": 253
+      },
+      "sourceSize": {
+        "w": 186,
+        "h": 253
+      }
+    },
+    "frame_06": {
+      "frame": {
+        "x": 1429,
+        "y": 481,
+        "w": 247,
+        "h": 158
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 247,
+        "h": 158
+      },
+      "sourceSize": {
+        "w": 247,
+        "h": 158
+      }
+    },
+    "frame_07": {
+      "frame": {
+        "x": 1680,
+        "y": 507,
+        "w": 223,
+        "h": 217
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 223,
+        "h": 217
+      },
+      "sourceSize": {
+        "w": 223,
+        "h": 217
+      }
+    },
+    "frame_08": {
+      "frame": {
+        "x": 1907,
+        "y": 503,
+        "w": 183,
+        "h": 221
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 183,
+        "h": 221
+      },
+      "sourceSize": {
+        "w": 183,
+        "h": 221
+      }
+    }
+  },
+  "meta": {
+    "image": "player_run_jump_sheet.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 2172,
+      "h": 724
+    },
+    "note": "Run-jump 9-frame one-shot. 3:1 ratio. Y-arc: launch low -> apex high -> land low."
+  }
+}
