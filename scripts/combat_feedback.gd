@@ -8,6 +8,8 @@ var _rng := RandomNumberGenerator.new()
 var _impact_texture: Texture2D = null
 var _spark_texture: Texture2D = null
 var _smoke_texture: Texture2D = null
+var _death_skulls: Array[Node3D] = []
+var _death_skull_day: int = -1
 
 var _active_camera: Camera3D = null
 var _base_h_offset: float = 0.0
@@ -18,18 +20,45 @@ var _shake_strength: float = 0.0
 
 func _ready() -> void:
 	_rng.randomize()
+	var clock = get_node_or_null("/root/GameClock")
+	if clock and clock.has_method("get_day"):
+		_death_skull_day = clock.get_day()
 	set_process(false)
 
 func _process(delta: float) -> void:
 	_update_screen_shake(delta)
+	_update_death_skulls()
+
+func _update_death_skulls() -> void:
+	if _death_skulls.is_empty():
+		return
+	var clock = get_node_or_null("/root/GameClock")
+	if clock and clock.has_method("get_day"):
+		var current_day: int = clock.get_day()
+		if _death_skull_day < 0:
+			_death_skull_day = current_day
+		elif current_day != _death_skull_day:
+			for skull in _death_skulls:
+				if is_instance_valid(skull):
+					skull.queue_free()
+			_death_skulls.clear()
+			_death_skull_day = current_day
+			set_process(_active_camera != null and is_instance_valid(_active_camera))
 
 # --- HIT FLASH -------------------------------------------------------------
 func hit_flash(sprite: Sprite3D, flash_color: Color = Color(1, 1, 1, 1), flash_in: float = 0.035, flash_out: float = 0.11) -> void:
 	if sprite == null or not is_instance_valid(sprite):
 		return
 
-	var base_color: Color = sprite.modulate
+	# Repeated hits can overlap tweens. Kill the previous flash and always
+	# restore the neutral base color instead of capturing a previous red flash.
+	var previous_tween = sprite.get_meta("combat_flash_tween", null)
+	if previous_tween and is_instance_valid(previous_tween):
+		previous_tween.kill()
+	var base_color := Color.WHITE
+	sprite.modulate = base_color
 	var tween := sprite.create_tween()
+	sprite.set_meta("combat_flash_tween", tween)
 	tween.tween_property(sprite, "modulate", flash_color, flash_in)
 	tween.tween_property(sprite, "modulate", base_color, flash_out)
 
@@ -87,14 +116,14 @@ func screen_shake(strength: float = 0.12, duration: float = 0.12) -> void:
 func _update_screen_shake(delta: float) -> void:
 	if _active_camera == null or not is_instance_valid(_active_camera):
 		_active_camera = null
-		set_process(false)
+		set_process(not _death_skulls.is_empty())
 		return
 
 	if _shake_time_left <= 0.0:
 		_reset_camera_offsets()
 		_shake_strength = 0.0
 		_shake_duration = 0.001
-		set_process(false)
+		set_process(not _death_skulls.is_empty())
 		return
 
 	_shake_time_left -= delta
@@ -131,6 +160,36 @@ func spawn_impact_effect(world_position: Vector3, color: Color = Color(1, 0.82, 
 
 	for i in range(spark_count):
 		_spawn_spark(world_position, color, radius)
+
+func spawn_enemy_death_skull(world_position: Vector3) -> void:
+	var skull_texture := load("res://art_v2/enemy_death_skull.png") as Texture2D
+	if skull_texture == null:
+		return
+	var skull := Sprite3D.new()
+	skull.name = "EnemyDeathSkull"
+	skull.texture = skull_texture
+	skull.billboard = 1
+	skull.shaded = false
+	skull.texture_filter = 0
+	# 1024px image at 0.0018 = approximately 1.84 world units wide.
+	skull.pixel_size = 0.0018
+	skull.modulate = Color(1.0, 0.86, 0.66, 1.0)
+	# Use normal depth testing so the skull can sit behind the player while
+	# remaining in front of the ground naturally.
+	skull.set("no_depth_test", false)
+	skull.render_priority = 0
+	add_child(skull)
+	skull.global_position = world_position
+	_death_skulls.append(skull)
+	var clock = get_node_or_null("/root/GameClock")
+	if clock and clock.has_method("get_day"):
+		_death_skull_day = clock.get_day()
+	set_process(true)
+
+	# A brief scale-in only; the skull remains until GameClock advances to a new day.
+	var tween := skull.create_tween()
+	skull.scale = Vector3(0.85, 0.85, 1.0)
+	tween.tween_property(skull, "scale", Vector3.ONE, 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 func spawn_death_effect(world_position: Vector3, is_boss: bool = false) -> void:
 	_ensure_textures()

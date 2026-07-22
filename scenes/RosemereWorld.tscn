@@ -1,6 +1,8 @@
-[gd_scene load_steps=24 format=3]
+[gd_scene load_steps=26 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/Player.tscn" id="1_player"]
+[ext_resource type="PackedScene" path="res://scenes/DeserterHalberdier.tscn" id="2_halberdier"]
+[ext_resource type="PackedScene" path="res://scenes/NorthRoadBandit.tscn" id="3_bandit"]
 [ext_resource type="PackedScene" path="res://scenes/DialogueUI.tscn" id="4_dialogue"]
 [ext_resource type="PackedScene" path="res://scenes/HUD.tscn" id="6_hud"]
 [ext_resource type="Script" path="res://scripts/day_night_cycle.gd" id="7_daynight"]
@@ -132,6 +134,12 @@ shape = SubResource("BoxShape3D_floor")
 
 [node name="Player" parent="." instance=ExtResource("1_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 5)
+
+[node name="DeserterHalberdier" parent="." instance=ExtResource("2_halberdier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="NorthRoadBandit" parent="." instance=ExtResource("3_bandit")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, 0)
 
 [node name="MinimapLayer" type="CanvasLayer" parent="."]
 layer = 10

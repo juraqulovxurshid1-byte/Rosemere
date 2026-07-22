@@ -30,7 +30,8 @@ const WORLD_BOUNDARY_MARGIN := 0.6
 @export var max_stamina: float = 100.0
 @export var max_focus: float = 100.0
 @export var attack_duration: float = 0.67
-@export var attack_damage: float = 25.0
+@export var attack_damage: float = 40.0
+@export var earthshatter_damage: float = 80.0
 var current_health: float = max_health
 var current_stamina: float = max_stamina
 var current_focus: float = max_focus
@@ -41,10 +42,18 @@ var is_matrix_dodging: bool = false
 var is_defencing: bool = false
 var is_montante_attacking: bool = false
 var is_hand_defencing: bool = false
+var is_earthshattering: bool = false
+var attack_hit_targets: Dictionary = {}
+var earthshatter_hit_targets: Dictionary = {}
+var defence_block_available: bool = false
+var defence_parry_ready: bool = false
+var knockback_velocity: Vector3 = Vector3.ZERO
+var knockback_timer: float = 0.0
 var matrix_dodge_face_left: bool = false
 var current_speed: float = move_speed
 var stamina_regen_timer: float = 0.0
 var focus_regen_timer: float = 0.0
+var montante_damage_timer: float = 0.0
 
 # --- QUEST & XP ---
 @export_group("Quest & XP")
@@ -57,6 +66,7 @@ var player_level: int = 1
 @onready var camera_pivot: Node3D = $CameraPivot
 @onready var sprite: Sprite3D = $Sprite3D
 @onready var melee_hitbox: Area3D = $MeleeHitbox
+@onready var melee_shape: CollisionShape3D = $MeleeHitbox/CollisionShape3D
 @onready var interact_area: Area3D = $InteractArea
 
 # --- SPRITE SHEET ANIMATION (SpriteCook walk / run / attack) ---
@@ -65,6 +75,7 @@ const IDLE_SHEET_PATH := "res://art_v2/player_idle_sheet.png"
 const WALK_SHEET_PATH := "res://art_v2/player_walk_sheet.png"
 const RUN_SHEET_PATH := "res://art_v2/player_run_sheet.png"
 const ATTACK_SHEET_PATH := "res://art_v2/player_attack_sheet.png"
+const EARTHSHATTER_SHEET_PATH := "res://art_v2/player_earthshatter_attack_sheet.png"
 const RUN_JUMP_SHEET_PATH := "res://art_v2/player_run_jump_sheet.png"
 const WALK_JUMP_SHEET_PATH := "res://art_v2/player_walk_jump_sheet.png"
 const IDLE_JUMP_SHEET_PATH := "res://art_v2/player_idle_jump_sheet.png"
@@ -75,6 +86,7 @@ const IDLE_FRAME_COUNT := 6
 const WALK_FRAME_COUNT := 8
 const RUN_FRAME_COUNT := 10
 const ATTACK_FRAME_COUNT := 10
+const EARTHSHATTER_FRAME_COUNT := 7
 const RUN_JUMP_FRAME_COUNT := 9
 const WALK_JUMP_FRAME_COUNT := 13
 const IDLE_JUMP_FRAME_COUNT := 7
@@ -99,6 +111,17 @@ const WALK_FPS := 10.0
 const RUN_FPS := 14.0
 # 10-frame overhead slash; ~0.67s total at 15 FPS (slightly longer read).
 const ATTACK_FPS := 15.0
+const EARTHSHATTER_FPS := 8.0
+const EARTHSHATTER_FRAME_SIZE := Vector2i(360, 640)
+# Per-frame normalization keeps the player silhouette consistent across the
+# standing, kneeling, impact, and recovery poses.
+const EARTHSHATTER_FRAME_PIXEL_SIZES: Array[float] = [
+	0.0234, 0.0234, 0.0236, 0.0241, 0.0247, 0.0240, 0.0234
+]
+const EARTHSHATTER_HIT_FRAME := 3 # fourth frame, 0-based
+const EARTHSHATTER_RADIUS := 2.8
+const EARTHSHATTER_STAMINA_COST := 60.0
+const EARTHSHATTER_FOCUS_COST := 15.0
 # Run-jump one-shot (9 frames, sprint_jump_velocity=6.6). ~1.48s total at 5.2 FPS.
 # Physics: sprint_jump_velocity=6.6, gravity=9.8 -> 1.3469s air time.
 # Frame 7 (Landing) at index 7: 7 x frame_time = 7/5.2 = 1.3462s <- exact match.
@@ -112,13 +135,19 @@ const WALK_JUMP_FPS := 6.6
 const IDLE_JUMP_FPS := 4.71
 # Dodge one-shot (8 frames). ~0.57s total at 14 FPS (faster than attack's 0.67s).
 const MATRIX_DODGE_FPS := 14.0
-const DEFENCE_FPS := 8.0
+const DEFENCE_FPS := 15.0 # 9 frames over approximately 0.6 seconds
 # Montante attack one-shot (14 frames). ~1.17s total at 12 FPS.
 # Held-channel: player must hold Alt+Left Click throughout.
 const MONTANTE_SHEET_PATH := "res://art_v2/player_montante_attack_sheet.png"
 const MONTANTE_FRAME_COUNT := 11
 const MONTANTE_LOOP_START := 3  # frames 0-2 windup, then loop from 3 to 10
 const MONTANTE_FPS := 6.0
+const MONTANTE_DAMAGE_RATE := 20.0 # damage per second while the channel is active
+const MONTANTE_DAMAGE_TICK := 0.1
+# Frame 4 width: 376 painted pixels × 0.02381 ≈ 8.95 world units;
+# Montante uses half of that reach for damage detection.
+const MONTANTE_HIT_RANGE := 4.475
+const REGULAR_HIT_RANGE := 8.125
 const MONTANTE_FRAME_SIZE := Vector2i(395, 328)
 const MONTANTE_COLUMNS := 11
 const MONTANTE_PIXEL_SIZE := 0.02381  # match idle body: 4.19u / 176px (frame 0 body width)
@@ -247,13 +276,14 @@ const MATRIX_DODGE_FRAMES: Array[Rect2] = [
 	Rect2(1824, 321, 231, 408), # 7
 ]
 
-enum AnimState { IDLE, WALK, RUN, ATTACK, RUN_JUMP, WALK_JUMP, IDLE_JUMP, MATRIX_DODGE, DEFENCE, MONTANTE, HAND_DEFENCE }
+enum AnimState { IDLE, WALK, RUN, ATTACK, EARTHSHATTER, RUN_JUMP, WALK_JUMP, IDLE_JUMP, MATRIX_DODGE, DEFENCE, MONTANTE, HAND_DEFENCE }
 
 var tex_idle: Texture2D = null
 var tex_idle_sheet: Texture2D = null
 var tex_walk_sheet: Texture2D = null
 var tex_run_sheet: Texture2D = null
 var tex_attack_sheet: Texture2D = null
+var tex_earthshatter_sheet: Texture2D = null
 var tex_run_jump_sheet: Texture2D = null
 var tex_walk_jump_sheet: Texture2D = null
 var tex_idle_jump_sheet: Texture2D = null
@@ -300,6 +330,7 @@ func _setup_sprite_animation() -> void:
 	tex_walk_sheet = load(WALK_SHEET_PATH) as Texture2D
 	tex_run_sheet = load(RUN_SHEET_PATH) as Texture2D
 	tex_attack_sheet = load(ATTACK_SHEET_PATH) as Texture2D
+	tex_earthshatter_sheet = load(EARTHSHATTER_SHEET_PATH) as Texture2D
 	tex_run_jump_sheet = load(RUN_JUMP_SHEET_PATH) as Texture2D
 	tex_walk_jump_sheet = load(WALK_JUMP_SHEET_PATH) as Texture2D
 	tex_idle_jump_sheet = load(IDLE_JUMP_SHEET_PATH) as Texture2D
@@ -343,7 +374,8 @@ func _ensure_input_mappings() -> void:
 		"move_right": [KEY_D, KEY_RIGHT],
 		"interact": [KEY_E],
 		"sprint": [KEY_SHIFT],
-		"defence": [KEY_R]
+		"defence": [KEY_R],
+		"earthshatter": [KEY_Q]
 	}
 	for action in key_mappings:
 		if not InputMap.has_action(action):
@@ -396,9 +428,19 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("interact"):
 		try_interact()
 	
+	# Earthshatter: Q — ground impact counter attack
+	if event.is_action_pressed("earthshatter") and is_on_floor() and not is_earthshattering:
+		if current_stamina >= EARTHSHATTER_STAMINA_COST and current_focus >= EARTHSHATTER_FOCUS_COST:
+			_cancel_active_combat_action()
+			start_earthshatter()
+		else:
+			if hud and hud.has_method("show_notification"):
+				hud.show_notification("Not enough Stamina or Focus!", Color(1, 0.4, 0.4, 1))
+
 	# Montante Attack: Alt + Left Click (held channel)
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed and Input.is_key_pressed(KEY_ALT) and not is_montante_attacking and not is_attacking and not is_matrix_dodging and not is_defencing and is_on_floor():
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed and Input.is_key_pressed(KEY_ALT) and not is_montante_attacking and is_on_floor():
 		if current_focus >= 10.0:
+			_cancel_active_combat_action()
 			start_montante()
 		else:
 			if hud and hud.has_method("show_notification"):
@@ -407,17 +449,20 @@ func _unhandled_input(event: InputEvent) -> void:
 	# Matrix Dodge: Alt + Right Click
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed and Input.is_key_pressed(KEY_ALT) and not is_matrix_dodging and is_on_floor():
 		if current_focus >= 25.0:
+			_cancel_active_combat_action()
 			start_matrix_dodge()
 		else:
 			if hud and hud.has_method("show_notification"):
 				hud.show_notification("Not enough Focus!", Color(0.3, 0.6, 1.0, 1))
 
 	# Hand Defence: Right Click (no Alt)
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed and not Input.is_key_pressed(KEY_ALT) and not is_hand_defencing and not is_attacking and not is_matrix_dodging and is_on_floor():
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed and not Input.is_key_pressed(KEY_ALT) and not is_hand_defencing and is_on_floor():
+		_cancel_active_combat_action()
 		start_hand_defence()
 
 	if event.is_action_pressed("defence") and not is_defencing and is_on_floor():
 		if current_stamina >= 10.0:
+			_cancel_active_combat_action()
 			start_defence()
 		else:
 			if hud and hud.has_method("show_notification"):
@@ -449,9 +494,25 @@ func _physics_process(delta: float) -> void:
 	if not is_on_floor():
 		velocity.y -= gravity * delta
 
+	if knockback_timer > 0.0:
+		knockback_timer -= delta
+		# A hit cancels sprint/jump carry so depleted stamina cannot preserve
+		# the previous running state after the knockback ends.
+		current_speed = move_speed
+		was_sprinting_on_jump = false
+		velocity.y = 0.0
+		velocity.x = knockback_velocity.x
+		velocity.z = knockback_velocity.z
+		knockback_velocity = knockback_velocity.move_toward(Vector3.ZERO, 18.0 * delta)
+		_update_sprite_animation(delta)
+		move_and_slide()
+		_clamp_to_world_bounds()
+		return
+
 	# 2. Handle Combat / Attacking & Magic Signs
-	if Input.is_action_just_pressed("attack") and not Input.is_key_pressed(KEY_ALT) and not is_attacking and not is_matrix_dodging and is_on_floor():
+	if Input.is_action_just_pressed("attack") and not Input.is_key_pressed(KEY_ALT) and not is_attacking and is_on_floor():
 		if current_stamina >= 15.0:
+			_cancel_active_combat_action()
 			start_attack()
 		else:
 			if hud and hud.has_method("show_notification"):
@@ -474,6 +535,13 @@ func _physics_process(delta: float) -> void:
 			if current_focus <= 0 or current_stamina <= 0:
 				_finish_montante()
 			else:
+				# Apply 20 DPS to enemies inside the active montante hitbox.
+				if melee_hitbox and melee_hitbox.monitoring:
+					montante_damage_timer += delta
+					while montante_damage_timer >= MONTANTE_DAMAGE_TICK:
+						montante_damage_timer -= MONTANTE_DAMAGE_TICK
+						_apply_montante_damage_tick()
+
 				# Advance montante animation — loop frames 3-10 forever
 				_apply_montante_frame(anim_frame)
 				anim_timer += delta
@@ -489,7 +557,7 @@ func _physics_process(delta: float) -> void:
 					_apply_montante_frame(anim_frame)
 					_sync_montante_hitbox()
 
-	if is_attacking or is_matrix_dodging or is_defencing or is_hand_defencing:
+	if is_attacking or is_earthshattering or is_matrix_dodging or is_defencing or is_hand_defencing:
 		velocity.x = move_toward(velocity.x, 0, acceleration * delta)
 		velocity.z = move_toward(velocity.z, 0, acceleration * delta)
 		_update_sprite_animation(delta)
@@ -507,7 +575,8 @@ func _physics_process(delta: float) -> void:
 		# Treat as sprint-jump if Shift is held and we are (or were) moving.
 		# Do NOT require stamina or exact current_speed — that was freezing on a run frame.
 		was_sprinting_on_jump = (
-			Input.is_action_pressed("sprint")
+			current_stamina > 0.0
+			and Input.is_action_pressed("sprint")
 			and (planar > 0.35 or move_input.length() > 0.1 or current_anim == AnimState.RUN)
 		)
 
@@ -657,6 +726,23 @@ func _update_sprite_animation(delta: float) -> void:
 	if sprite == null:
 		return
 
+	# Earthshatter one-shot: damage nearby enemies on frame 4.
+	if current_anim == AnimState.EARTHSHATTER:
+		anim_timer += delta
+		var earth_frame_time := 1.0 / EARTHSHATTER_FPS
+		if anim_timer >= earth_frame_time:
+			var earth_steps := int(anim_timer / earth_frame_time)
+			anim_timer -= float(earth_steps) * earth_frame_time
+			var previous_earth_frame := anim_frame
+			anim_frame += earth_steps
+			if previous_earth_frame < EARTHSHATTER_HIT_FRAME and anim_frame >= EARTHSHATTER_HIT_FRAME:
+				_apply_earthshatter_impact()
+			if anim_frame >= EARTHSHATTER_FRAME_COUNT:
+				_finish_earthshatter()
+				return
+			_apply_earthshatter_frame(anim_frame)
+		return
+
 	# One-shot attack: advance frames, enable hitbox on slash frames, then release.
 	if current_anim == AnimState.ATTACK:
 		anim_timer += delta
@@ -754,6 +840,8 @@ func _update_sprite_animation(delta: float) -> void:
 	# Defence one-shot: 9-frame sequence
 	if current_anim == AnimState.DEFENCE:
 		_apply_defence_frame(anim_frame)
+		if not defence_parry_ready and anim_frame >= DEFENCE_FRAME_COUNT / 2.0:
+			defence_parry_ready = true
 
 		anim_timer += delta
 		var frame_time := 1.0 / DEFENCE_FPS
@@ -919,6 +1007,14 @@ func _set_anim_state(state: AnimState, force: bool = false) -> void:
 			sprite.pixel_size = ANIM_PIXEL_SIZE
 			sprite.position = Vector3(0.0, RUN_SPRITE_Y, 0.0)
 			_apply_sheet_frame(RUN_FRAME_SIZE, 0, RUN_COLUMNS)
+		AnimState.EARTHSHATTER:
+			if tex_earthshatter_sheet:
+				sprite.texture = tex_earthshatter_sheet
+				sprite.region_enabled = true
+				sprite.centered = true
+				sprite.pixel_size = EARTHSHATTER_FRAME_PIXEL_SIZES[0]
+				sprite.position = Vector3(0.0, 320.0 * EARTHSHATTER_FRAME_PIXEL_SIZES[0], 0.0)
+				_apply_earthshatter_frame(0)
 		AnimState.ATTACK:
 			if tex_attack_sheet:
 				sprite.texture = tex_attack_sheet
@@ -1067,15 +1163,55 @@ func _apply_montante_frame(frame_index: int) -> void:
 	sprite.region_rect = Rect2(frame_index * (MONTANTE_FRAME_SIZE.x + 4), 0, MONTANTE_FRAME_SIZE.x, MONTANTE_FRAME_SIZE.y)
 
 
+func _apply_montante_damage_tick() -> void:
+	var damage_targets := {}
+	if melee_hitbox:
+		for body in melee_hitbox.get_overlapping_bodies():
+			damage_targets[body] = true
+
+	# Fallback scan keeps Montante damage reliable for the wide visual swing.
+	var scene := get_tree().current_scene
+	if scene:
+		for body in scene.find_children("*", "Node3D", true, false):
+			if body != self and body is not PlayerController and body.has_method("take_damage"):
+				if global_position.distance_to(body.global_position) <= MONTANTE_HIT_RANGE:
+					damage_targets[body] = true
+
+	for body in damage_targets:
+		var target_body: Node3D = body as Node3D
+		if target_body == null or target_body == self or not is_instance_valid(target_body) or not target_body.has_method("take_damage"):
+			continue
+		var to_target: Vector3 = target_body.global_position - global_position
+		to_target.y = 0.0
+		if to_target.length() <= 0.001:
+			continue
+		var facing_sign := -1.0 if sprite.flip_h else 1.0
+		var attack_direction := Vector3(facing_sign, 0.0, -1.0).normalized()
+		if attack_direction.dot(to_target.normalized()) > 0.0:
+			target_body.take_damage(MONTANTE_DAMAGE_RATE * MONTANTE_DAMAGE_TICK)
+			if target_body.has_method("set_montante_suppressed"):
+				target_body.set_montante_suppressed(self)
+
 func _sync_montante_hitbox() -> void:
 	if melee_hitbox == null:
 		return
+	_position_melee_hitbox(MONTANTE_HIT_RANGE)
 	var active := (
 		current_anim == AnimState.MONTANTE
 		and anim_frame >= MONTANTE_HIT_FRAME_START
 		and anim_frame <= MONTANTE_HIT_FRAME_END
 	)
 	melee_hitbox.monitoring = active
+
+func _position_melee_hitbox(reach: float = REGULAR_HIT_RANGE) -> void:
+	if melee_hitbox == null:
+		return
+	var half_reach := reach * 0.5
+	if melee_shape and melee_shape.shape is BoxShape3D:
+		var box := melee_shape.shape as BoxShape3D
+		box.size = Vector3(1.8, 1.5, reach)
+	# Keep the near edge close to the player and extend forward along Z.
+	melee_hitbox.position = Vector3(0.0, 0.9, -half_reach)
 
 
 func _apply_hand_defence_frame(frame_index: int) -> void:
@@ -1151,13 +1287,109 @@ func _apply_walk_jump_frame(frame_index: int) -> void:
 func _sync_attack_hitbox() -> void:
 	if melee_hitbox == null:
 		return
+	_position_melee_hitbox()
 	var active := (
 		current_anim == AnimState.ATTACK
 		and anim_frame >= ATTACK_HIT_FRAME_START
 		and anim_frame <= ATTACK_HIT_FRAME_END
 	)
 	melee_hitbox.monitoring = active
+	if active:
+		_check_attack_overlaps()
 
+func _check_attack_overlaps() -> void:
+	if melee_hitbox == null:
+		return
+
+	# Primary path: physics overlap.
+	for body in melee_hitbox.get_overlapping_bodies():
+		_try_melee_hit(body)
+
+	# Fallback path: attack sheets are much wider than the character capsule,
+	# so also check damageable scene nodes inside the frame-6 reach.
+	var scene := get_tree().current_scene
+	if scene:
+		for body in scene.find_children("*", "Node3D", true, false):
+			if body == self or body is PlayerController or not body.has_method("take_damage"):
+				continue
+			if global_position.distance_to(body.global_position) <= 8.125:
+				_try_melee_hit(body)
+
+func _try_melee_hit(body: Node3D) -> void:
+	if body == self or attack_hit_targets.has(body):
+		return
+
+	# Build the same forward direction used by the isometric attack: forward
+	# along -Z, with the player's horizontal facing added as the X component.
+	# This rejects targets on the player's back-side, not just by X alone.
+	var to_target: Vector3 = body.global_position - global_position
+	to_target.y = 0.0
+	if to_target.length() <= 0.001:
+		return
+	to_target = to_target.normalized()
+	var facing_sign := -1.0 if sprite.flip_h else 1.0
+	var attack_direction := Vector3(facing_sign, 0.0, -1.0).normalized()
+	if attack_direction.dot(to_target) <= 0.0:
+		return
+
+	if body.has_method("take_damage"):
+		attack_hit_targets[body] = true
+		body.take_damage(attack_damage)
+		print("Hit target: ", body.name, " for ", attack_damage, " damage!")
+
+
+func start_earthshatter() -> void:
+	is_earthshattering = true
+	current_stamina = max(0.0, current_stamina - EARTHSHATTER_STAMINA_COST)
+	current_focus = max(0.0, current_focus - EARTHSHATTER_FOCUS_COST)
+	stamina_regen_timer = 0.7
+	focus_regen_timer = 0.7
+	if hud:
+		if hud.has_method("update_stamina"):
+			hud.update_stamina(current_stamina, max_stamina)
+		if hud.has_method("update_focus"):
+			hud.update_focus(current_focus, max_focus)
+	anim_timer = 0.0
+	anim_frame = 0
+	print("[Player] Earthshatter!")
+	_set_anim_state(AnimState.EARTHSHATTER, true)
+	_apply_earthshatter_frame(0)
+
+func _apply_earthshatter_frame(frame_index: int) -> void:
+	if sprite == null or tex_earthshatter_sheet == null:
+		return
+	frame_index = clampi(frame_index, 0, EARTHSHATTER_FRAME_COUNT - 1)
+	sprite.texture = tex_earthshatter_sheet
+	sprite.region_enabled = true
+	sprite.centered = true
+	var frame_pixel_size: float = EARTHSHATTER_FRAME_PIXEL_SIZES[frame_index]
+	sprite.pixel_size = frame_pixel_size
+	sprite.position = Vector3(0.0, 320.0 * frame_pixel_size, 0.0)
+	sprite.region_rect = Rect2(frame_index * EARTHSHATTER_FRAME_SIZE.x, 0, EARTHSHATTER_FRAME_SIZE.x, EARTHSHATTER_FRAME_SIZE.y)
+
+func _apply_earthshatter_impact() -> void:
+	var hit_targets := {}
+	var scene := get_tree().current_scene
+	if scene:
+		for body in scene.find_children("*", "Node3D", true, false):
+			if body != self and body is not PlayerController and body.has_method("take_damage"):
+				if global_position.distance_to(body.global_position) <= EARTHSHATTER_RADIUS:
+					hit_targets[body] = true
+	for body in hit_targets:
+		var target_body: Node3D = body as Node3D
+		if target_body == null or not is_instance_valid(target_body):
+			continue
+		if target_body.has_method("take_earthshatter_damage"):
+			target_body.take_earthshatter_damage(earthshatter_damage)
+		else:
+			target_body.take_damage(earthshatter_damage)
+	var feedback = _get_combat_feedback()
+	if feedback:
+		feedback.spawn_impact_effect(global_position + Vector3(0.0, 0.15, 0.0), Color(0.35, 0.85, 1.0, 1.0), 1.0, 14)
+
+func _finish_earthshatter() -> void:
+	is_earthshattering = false
+	_set_anim_state(AnimState.IDLE, true)
 
 func _finish_attack() -> void:
 	is_attacking = false
@@ -1199,6 +1431,8 @@ func _finish_matrix_dodge() -> void:
 
 func _finish_defence() -> void:
 	is_defencing = false
+	defence_block_available = false
+	defence_parry_ready = false
 	_set_anim_state(AnimState.IDLE, true)
 
 func _finish_hand_defence() -> void:
@@ -1208,6 +1442,7 @@ func _finish_hand_defence() -> void:
 
 func _finish_montante() -> void:
 	is_montante_attacking = false
+	montante_damage_timer = 0.0
 	if melee_hitbox:
 		melee_hitbox.monitoring = false
 	_set_anim_state(AnimState.IDLE, true)
@@ -1299,6 +1534,22 @@ func try_interact() -> void:
 		hud.show_notification("Nothing in reach to interact with!", Color(1, 0.7, 0.2, 1))
 
 # --- COMBAT FUNCTIONS ---
+func _cancel_active_combat_action() -> void:
+	# Combat inputs are mutually cancellable: the newest valid action wins.
+	is_attacking = false
+	is_matrix_dodging = false
+	is_defencing = false
+	defence_block_available = false
+	defence_parry_ready = false
+	is_montante_attacking = false
+	is_hand_defencing = false
+	is_earthshattering = false
+	if melee_hitbox:
+		melee_hitbox.monitoring = false
+	anim_timer = 0.0
+	anim_frame = 0
+	_set_anim_state(AnimState.IDLE, true)
+
 func start_matrix_dodge() -> void:
 	is_matrix_dodging = true
 	matrix_dodge_face_left = sprite.flip_h if sprite else false
@@ -1317,6 +1568,8 @@ func start_matrix_dodge() -> void:
 
 func start_defence() -> void:
 	is_defencing = true
+	defence_block_available = true
+	defence_parry_ready = false
 	current_stamina = max(0.0, current_stamina - 10.0)
 	if hud and hud.has_method("update_stamina"):
 		hud.update_stamina(current_stamina, max_stamina)
@@ -1337,8 +1590,24 @@ func start_hand_defence() -> void:
 	_apply_hand_defence_frame(0)
 
 
+func _spawn_parry_shield_vfx(_attacker: Node3D = null, hand_defence: bool = false) -> void:
+	# Regular Defence keeps the damage-text position. Hand Defence uses a
+	# higher chest position because its animation is a close body guard.
+	var y_offset := ParryShieldVFX.HAND_DEFENCE_Y_OFFSET if hand_defence else ParryShieldVFX.DAMAGE_TEXT_Y_OFFSET
+	# Looking right means flip_h=false; looking left means flip_h=true.
+	# Move the hand-defence shield slightly toward the player's leading side.
+	var x_offset := 0.0
+	if hand_defence:
+		x_offset = ParryShieldVFX.HAND_DEFENCE_X_OFFSET * (-1.0 if sprite.flip_h else 1.0)
+	var shield_position := global_position + Vector3(x_offset, y_offset, 0.0)
+	var vfx_parent: Node = get_tree().current_scene
+	if vfx_parent:
+		ParryShieldVFX.spawn_parry_vfx(vfx_parent, shield_position, not sprite.flip_h, self, _attacker, y_offset, x_offset)
+
+
 func start_montante() -> void:
 	is_montante_attacking = true
+	montante_damage_timer = 0.0
 	focus_regen_timer = 0.7
 	anim_timer = 0.0
 	anim_frame = 0
@@ -1351,6 +1620,7 @@ func start_montante() -> void:
 
 func start_attack() -> void:
 	is_attacking = true
+	attack_hit_targets.clear()
 	_play_sound("slash")
 	current_stamina = max(0.0, current_stamina - 15.0)
 	if hud and hud.has_method("update_stamina"):
@@ -1371,9 +1641,9 @@ func start_attack() -> void:
 	_sync_attack_hitbox()
 
 func _on_melee_hit(body: Node3D) -> void:
-	if body.has_method("take_damage") and body != self:
-		body.take_damage(attack_damage)
-		print("Hit target: ", body.name, " for ", attack_damage, " damage!")
+	if current_anim == AnimState.MONTANTE:
+		return # Montante damage is applied by its timed DPS loop.
+	_try_melee_hit(body)
 
 func _get_combat_feedback():
 	var tree := get_tree()
@@ -1395,13 +1665,51 @@ func _get_combat_feedback():
 	parent.add_child(feedback)
 	return feedback
 
-func take_damage(amount: float) -> void:
+func _is_attacker_in_front(attacker: Node3D = null) -> bool:
+	# Preserve defensive behavior for non-enemy/environmental damage that has
+	# no attacker reference.
+	if attacker == null or not is_instance_valid(attacker):
+		return true
+	var to_attacker: Vector3 = attacker.global_position - global_position
+	to_attacker.y = 0.0
+	if to_attacker.length() <= 0.001:
+		return true
+	var facing_sign := -1.0 if sprite.flip_h else 1.0
+	var defence_direction := Vector3(facing_sign, 0.0, -1.0).normalized()
+	return defence_direction.dot(to_attacker.normalized()) > 0.0
+
+func take_damage(amount: float, attacker: Node3D = null) -> void:
 	var feedback = _get_combat_feedback()
 	var impact_pos := global_position + Vector3(0, 1.15, 0)
 
-	# Hand defence halves incoming damage
-	if is_hand_defencing:
+	# Matrix Dodge grants complete attack immunity while its animation is active.
+	if is_matrix_dodging:
+		print("[Player] Matrix Dodge completely avoided the attack!")
+		return
+
+	# Defence only works when the attacker is in front of the player's facing
+	# direction. Turning away from an attack leaves the player vulnerable.
+	var attacker_is_in_front := _is_attacker_in_front(attacker)
+	if is_defencing and defence_parry_ready and defence_block_available and attacker_is_in_front:
+		defence_block_available = false
+		_spawn_parry_shield_vfx(attacker)
+		print("[Player] Defence completely blocked the attack!")
+		return
+	elif is_hand_defencing and attacker_is_in_front:
+		_spawn_parry_shield_vfx(attacker, true)
 		amount = amount * 0.5
+
+	# Any damage that gets through interrupts the current action and throws
+	# the player backward from the attacker.
+	_cancel_active_combat_action()
+	var knockback_direction := Vector3(0.0, 0.0, 1.0)
+	if attacker and is_instance_valid(attacker):
+		knockback_direction = global_position - attacker.global_position
+		knockback_direction.y = 0.0
+		if knockback_direction.length() > 0.001:
+			knockback_direction = knockback_direction.normalized()
+	knockback_velocity = knockback_direction * 4.5
+	knockback_timer = 0.22
 
 	current_health = max(0.0, current_health - amount)
 	print("[Player] OUCH! Took ", amount, " damage from enemy! Health remaining: ", current_health)

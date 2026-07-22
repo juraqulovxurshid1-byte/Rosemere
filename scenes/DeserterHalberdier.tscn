@@ -1,0 +1,38 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/deserter_halberdier.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://art_v2/deserter_halberdier_idle_sheet.png" id="2_texture"]
+
+[sub_resource type="CapsuleShape3D" id="Capsule_enemy"]
+radius = 0.45
+height = 1.9
+
+[sub_resource type="SphereShape3D" id="Sphere_aggro"]
+radius = 16.0
+
+[node name="DeserterHalberdier" type="CharacterBody3D"]
+script = ExtResource("1_script")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0)
+shape = SubResource("Capsule_enemy")
+
+[node name="Sprite3D" type="Sprite3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.53, 0)
+billboard = 2
+shaded = true
+texture_filter = 0
+alpha_cut = 2
+alpha_scissor_threshold = 0.05
+texture = ExtResource("2_texture")
+centered = true
+region_enabled = true
+region_rect = Rect2(0, 0, 279, 567)
+pixel_size = 0.016
+
+[node name="AggroArea" type="Area3D" parent="."]
+monitoring = true
+monitorable = true
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="AggroArea"]
+shape = SubResource("Sphere_aggro")

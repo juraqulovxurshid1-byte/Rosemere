@@ -8,7 +8,11 @@ radius = 0.4
 height = 1.8
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_hitbox"]
-size = Vector3(1.8, 1.5, 1.8)
+# Match the horizontal screen reach of attack-sheet frame 6 along the
+# player's forward world axis (Z in Rosemere's isometric setup).
+# 509 painted pixels × 0.03192 pixel_size ≈ 16.25 world units.
+# Use half of attack-sheet frame 6's painted reach for hit detection.
+size = Vector3(1.8, 1.5, 8.125)
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_interact"]
 radius = 4.5
@@ -44,7 +48,8 @@ far = 10000.0
 current = true
 
 [node name="MeleeHitbox" type="Area3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, -1.0)
+# The controller keeps the near edge close to the player and extends forward.
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, -4.0625)
 monitoring = false
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="MeleeHitbox"]
