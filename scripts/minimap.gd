@@ -6,10 +6,10 @@ extends Control
 # Player reference — found at runtime
 var _player: Node3D = null
 
-# Map image is 896×1200, rendered at 3× zoom = 2688×3600
-const MAP_TEX_W := 896.0
-const MAP_TEX_H := 1200.0
-const ZOOM := 1.2
+# Upscaled Map (2752x1536)
+const MAP_TEX_W := 2752.0
+const MAP_TEX_H := 1536.0
+const ZOOM := 0.6 # Zoom out for a wider view of the surrounding terrain
 const MINIMAP_SIZE := 200.0
 
 # World area the map covers (tune these to match your kingdom layout)

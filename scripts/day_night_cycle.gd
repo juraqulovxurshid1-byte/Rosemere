@@ -5,7 +5,6 @@ const SECONDS_PER_DAY = 86400.0
 
 var _kp = [0.0, 0.166667, 0.25, 0.333333, 0.5, 0.666667, 0.75, 0.833333, 1.0]
 
-# Direct light color - morning gold, evening red
 var _dc = [
 	Color(0.10, 0.12, 0.28),
 	Color(0.22, 0.25, 0.45),
@@ -18,10 +17,8 @@ var _dc = [
 	Color(0.10, 0.12, 0.28),
 ]
 
-# Direct energy - sunset cranked HIGH so it's actually visibly bright
 var _de = [0.12, 0.20, 0.55, 0.90, 1.35, 0.80, 2.0, 0.25, 0.12]
 
-# Ambient color - stays cooler/neutral than direct for contrast
 var _ac = [
 	Color(0.06, 0.08, 0.18),
 	Color(0.14, 0.18, 0.32),
@@ -35,21 +32,6 @@ var _ac = [
 ]
 
 var _ae = [0.10, 0.18, 0.35, 0.60, 0.95, 0.50, 0.80, 0.30, 0.10]
-
-var _fd_ = [0.0004, 0.0005, 0.0005, 0.0003, 0.0002, 0.0003, 0.0004, 0.0004, 0.0004]
-
-var _fc_ = [
-	Color(0.08, 0.10, 0.20),
-	Color(0.16, 0.18, 0.30),
-	Color(0.40, 0.32, 0.24),
-	Color(0.65, 0.55, 0.40),
-	Color(0.65, 0.68, 0.72),
-	Color(0.55, 0.42, 0.30),
-	Color(0.22, 0.18, 0.16),
-	Color(0.22, 0.22, 0.35),
-	Color(0.08, 0.10, 0.20),
-]
-
 var _stc = [Color(0.04, 0.05, 0.14), Color(0.08, 0.10, 0.22), Color(0.22, 0.18, 0.35), Color(0.48, 0.58, 0.72), Color(0.58, 0.68, 0.85), Color(0.52, 0.50, 0.65), Color(0.32, 0.12, 0.22), Color(0.10, 0.08, 0.18), Color(0.04, 0.05, 0.14)]
 var _shc = [Color(0.08, 0.10, 0.22), Color(0.18, 0.22, 0.38), Color(0.82, 0.40, 0.28), Color(0.85, 0.72, 0.55), Color(0.78, 0.80, 0.82), Color(0.85, 0.65, 0.48), Color(0.82, 0.35, 0.20), Color(0.32, 0.20, 0.28), Color(0.08, 0.10, 0.22)]
 
@@ -57,48 +39,145 @@ var time_of_day_str = "Night"
 var _environment = null
 var _sky_material = null
 var _weather = null
+var _world_tint = null
 
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_cache_world_environment()
+	_find_world_tint()
 	_find_weather()
+
+func _find_world_tint():
+	_world_tint = get_tree().root.find_child("WorldTint", true, false) as CanvasModulate
 
 func _process(_delta):
 	var dp = fposmod(GameClock.elapsed_seconds, SECONDS_PER_DAY) / SECONDS_PER_DAY
-	rotation_degrees.x = dp * 360.0 - 180.0
-	var lc = _sample(dp, _dc)
-	var le = _sample(dp, _de)
-	var ambc = _sample(dp, _ac)
-	var ambe = _sample(dp, _ae)
-	var fc = _sample(dp, _fc_)
-	var fd = _sample(dp, _fd_)
-	var skyt = _sample(dp, _stc)
-	var skyh = _sample(dp, _shc)
+	_update_label(dp)
+	
+	# Transition width: 30 minutes (30 / 1440 mins per day)
+	var tw = 30.0 / 1440.0
+	
+	# Timeline points
+	var p_night_end = 0.125 # 03:00
+	var p_golden_start = 0.45833 # 11:00
+	var p_golden_end = 0.83333 # 20:00
+	var p_night_start = 0.91667 # 22:00
+	
+	var p = {}
+	
+	# Determine current params based on state or transition
+	if dp >= p_night_end - tw and dp < p_night_end:
+		# 02:30 -> 03:00: Night to Neutral
+		var t = (dp - (p_night_end - tw)) / tw
+		p = _blend_params(_get_night_params(dp), _get_neutral_params(), t)
+	elif dp >= p_golden_start - tw and dp < p_golden_start:
+		# 10:30 -> 11:00: Neutral to Golden
+		var t = (dp - (p_golden_start - tw)) / tw
+		p = _blend_params(_get_neutral_params(), _get_golden_params(), t)
+	elif dp >= p_golden_end - tw and dp < p_golden_end:
+		# 19:30 -> 20:00: Golden to Neutral
+		var t = (dp - (p_golden_end - tw)) / tw
+		p = _blend_params(_get_golden_params(), _get_neutral_params(), t)
+	elif dp >= p_night_start - tw and dp < p_night_start:
+		# 21:30 -> 22:00: Neutral to Night
+		var t = (dp - (p_night_start - tw)) / tw
+		p = _blend_params(_get_neutral_params(), _get_night_params(dp), t)
+	# Pure states
+	elif dp < p_night_end - tw or dp >= p_night_start:
+		p = _get_night_params(dp)
+	elif dp >= p_night_end and dp < p_golden_start - tw:
+		p = _get_neutral_params()
+	elif dp >= p_golden_start and dp < p_golden_end - tw:
+		p = _get_golden_params()
+	else:
+		p = _get_neutral_params()
+		
+	_apply_param_dict(p)
+
+func _get_night_params(dp: float) -> Dictionary:
+	return {
+		"lc": _sample(dp, _dc),
+		"le": _sample(dp, _de),
+		"ac": _sample(dp, _ac),
+		"ae": _sample(dp, _ae),
+		"stc": _sample(dp, _stc),
+		"shc": _sample(dp, _shc),
+		"rot_x": dp * 360.0 - 180.0
+	}
+
+func _get_neutral_params() -> Dictionary:
+	return {
+		"lc": Color.WHITE,
+		"le": 1.0,
+		"ac": Color(0.5, 0.5, 0.5),
+		"ae": 1.0,
+		"stc": Color(0.38, 0.45, 0.55),
+		"shc": Color(0.65, 0.70, 0.80),
+		"rot_x": -45.0
+	}
+
+func _get_golden_params() -> Dictionary:
+	var m_dp = 0.333333 # 08:00 color
+	return {
+		"lc": _sample(m_dp, _dc),
+		"le": _sample(m_dp, _de),
+		"ac": _sample(m_dp, _ac),
+		"ae": _sample(m_dp, _ae),
+		"stc": _sample(m_dp, _stc),
+		"shc": _sample(m_dp, _shc),
+		"rot_x": -60.0
+	}
+
+func _blend_params(a: Dictionary, b: Dictionary, t: float) -> Dictionary:
+	# Use ease-in-out for the transition weight
+	var ease_t = t * t * (3.0 - 2.0 * t)
+	return {
+		"lc": a.lc.lerp(b.lc, ease_t),
+		"le": lerp(a.le, b.le, ease_t),
+		"ac": a.ac.lerp(b.ac, ease_t),
+		"ae": lerp(a.ae, b.ae, ease_t),
+		"stc": a.stc.lerp(b.stc, ease_t),
+		"shc": a.shc.lerp(b.shc, ease_t),
+		"rot_x": rad_to_deg(lerp_angle(deg_to_rad(a.rot_x), deg_to_rad(b.rot_x), ease_t))
+	}
+
+func _apply_param_dict(p: Dictionary):
+	if _environment == null or _sky_material == null:
+		_cache_world_environment()
+		
+	var lc = p.lc
+	var le = p.le
+	var ambc = p.ac
+	var ambe = p.ae
+	var skyt = p.stc
+	var skyh = p.shc
+	
 	if _weather != null:
 		var wm = _weather.get_modifiers()
 		lc = lc * wm["direct_color_mod"]
 		le = le * wm["direct_energy_mod"]
 		ambc = ambc * wm["ambient_color_mod"]
 		ambe = ambe * wm["ambient_energy_mod"]
-		fc = fc * wm["fog_color_mod"]
-		fd = fd + wm["fog_density_add"]
 		skyt = skyt * wm["sky_color_mod"]
 		skyh = skyh * wm["sky_horizon_mod"]
+		
 	light_color = lc
-	light_energy = max(le, 0.01)
-	if _environment == null or _sky_material == null:
-		_cache_world_environment()
+	light_energy = le
+	rotation_degrees.x = p.rot_x
+			
 	if _environment != null:
 		_environment.ambient_light_color = ambc
 		_environment.ambient_light_energy = ambe
-		_environment.fog_light_color = fc
-		_environment.fog_density = max(fd, 0.00001)
+		_environment.fog_enabled = false
+		
 	if _sky_material != null:
 		_sky_material.sky_top_color = skyt
 		_sky_material.sky_horizon_color = skyh
 		_sky_material.ground_bottom_color = skyt.darkened(0.28)
 		_sky_material.ground_horizon_color = skyh.darkened(0.18)
-	_update_label(dp)
+	
+	if _world_tint:
+		_world_tint.color = Color.WHITE
 
 func _sample(dp, vals):
 	var n = vals.size()
@@ -140,7 +219,6 @@ func _cache_world_environment():
 	if we != null:
 		_environment = we.environment
 		if _environment != null:
-			_environment.fog_enabled = true
 			if _environment.sky != null and _environment.sky.sky_material is ProceduralSkyMaterial:
 				_sky_material = _environment.sky.sky_material as ProceduralSkyMaterial
 

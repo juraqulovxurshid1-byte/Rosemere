@@ -9,7 +9,7 @@
 [ext_resource type="PackedScene" path="res://scenes/SoundManager.tscn" id="15_sound"]
 [ext_resource type="Script" path="res://scripts/groq_config.gd" id="16_groqcfg"]
 [ext_resource type="Material" path="res://materials/cobblestone_ground_mat.tres" id="30_cobblemat"]
-[ext_resource type="Texture2D" path="res://art_v2/kingdom_map_dark.png" id="51_minimap"]
+[ext_resource type="Texture2D" path="res://art_v2/kingdom_map_upscaled.png" id="51_minimap"]
 [ext_resource type="Script" path="res://scripts/minimap_controller.gd" id="52_minimap_script"]
 [ext_resource type="Script" path="res://scripts/minimap.gd" id="53_minimap_gd"]
 [ext_resource type="Script" path="res://scripts/minimap_mask.gd" id="54_minimap_mask"]
@@ -59,7 +59,7 @@ border_width_right = 0
 border_width_bottom = 0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hover"]
-bg_color = Color(1, 1, 1, 0.08)
+bg_color = Color(1, 1, 1, 0.0)
 border_width_left = 0
 border_width_top = 0
 border_width_right = 0
@@ -141,6 +141,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 [node name="NorthRoadBandit" parent="." instance=ExtResource("3_bandit")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, 0)
 
+[node name="WorldTint" type="CanvasModulate" parent="."]
+color = Color(1, 1, 1, 1)
+
 [node name="MinimapLayer" type="CanvasLayer" parent="."]
 layer = 10
 script = ExtResource("52_minimap_script")
@@ -199,10 +202,12 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+focus_mode = 0
 mouse_filter = 0
 theme_override_styles/normal = SubResource("StyleBoxFlat_invisible")
 theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_invisible")
+theme_override_styles/focus = SubResource("StyleBoxFlat_invisible")
 
 [node name="CompassOverlay" type="Control" parent="MinimapLayer/MinimapContainer"]
 layout_mode = 1
@@ -374,38 +379,29 @@ vertical_alignment = 1
 
 [node name="FullMapOverlay" type="ColorRect" parent="MinimapLayer"]
 visible = false
+clip_contents = true
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 0
-color = Color(0, 0, 0, 0.7)
+color = Color(0, 0, 0, 1)
 
 [node name="MapImage" type="TextureRect" parent="MinimapLayer/FullMapOverlay"]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -350.0
-offset_top = -470.0
-offset_right = 350.0
-offset_bottom = 470.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 0
+offset_right = 2500.0
+offset_bottom = 1060.0
 mouse_filter = 2
 texture = ExtResource("51_minimap")
-expand_mode = 3
+expand_mode = 1
 stretch_mode = 5
 modulate = Color(0.85, 0.88, 0.92, 1.0)
 
 [node name="FullMapPlayerDot" type="ColorRect" parent="MinimapLayer/FullMapOverlay/MapImage"]
 layout_mode = 0
-offset_left = 345.0
-offset_top = 465.0
-offset_right = 355.0
-offset_bottom = 475.0
+offset_right = 10.0
+offset_bottom = 10.0
 mouse_filter = 2
 color = Color(0.9, 0.15, 0.15, 1.0)
 

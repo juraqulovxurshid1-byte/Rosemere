@@ -81,6 +81,7 @@ const WALK_JUMP_SHEET_PATH := "res://art_v2/player_walk_jump_sheet.png"
 const IDLE_JUMP_SHEET_PATH := "res://art_v2/player_idle_jump_sheet.png"
 const MATRIX_DODGE_SHEET_PATH := "res://art_v2/player_matrix_dodge_sheet.png"
 const DEFENCE_SHEET_PATH := "res://art_v2/player_defence_sheet.png"
+const REST_SHEET_PATH := "res://art_v2/player_rest_sheet.png"
 
 const IDLE_FRAME_COUNT := 6
 const WALK_FRAME_COUNT := 8
@@ -92,6 +93,7 @@ const WALK_JUMP_FRAME_COUNT := 13
 const IDLE_JUMP_FRAME_COUNT := 7
 const MATRIX_DODGE_FRAME_COUNT := 8
 const DEFENCE_FRAME_COUNT := 9
+const REST_FRAME_COUNT := 9
 const DEFENCE_FRAME_SIZE := Vector2i(403, 418)
 const DEFENCE_COLUMNS := 9
 const RUN_JUMP_APEX_FRAME := 4  # peak pose
@@ -112,6 +114,21 @@ const RUN_FPS := 14.0
 # 10-frame overhead slash; ~0.67s total at 15 FPS (slightly longer read).
 const ATTACK_FPS := 15.0
 const EARTHSHATTER_FPS := 8.0
+const REST_FPS := 5.0
+const REST_LOOP_FPS := 1.0
+const REST_LOOP_START := 2
+const REST_LOOP_END := 5
+const REST_FRAME_PIXEL_SIZES: Array[float] = [
+	0.0110, # Frame 1
+	0.0120, # Frame 2
+	0.0140, # Frame 4
+	0.0140, # Frame 5
+	0.0140, # Frame 6
+	0.0140, # Frame 7
+	0.0130, # Frame 8
+	0.0140, # Frame 9
+	0.0105  # Frame 11
+]
 const EARTHSHATTER_FRAME_SIZE := Vector2i(360, 640)
 # Per-frame normalization keeps the player silhouette consistent across the
 # standing, kneeling, impact, and recovery poses.
@@ -193,6 +210,8 @@ const MATRIX_DODGE_PIXEL_SIZE := 0.01747  # match IDLE_PIXEL_SIZE
 const MATRIX_DODGE_SPRITE_Y := 3.852  # same feet placement as idle
 const DEFENCE_PIXEL_SIZE := 0.01747  # match IDLE_PIXEL_SIZE
 const DEFENCE_SPRITE_Y := 3.852
+const REST_PIXEL_SIZE := 0.01747  # match IDLE_PIXEL_SIZE
+const REST_SPRITE_Y := 3.852
 
 # Controls for "crouch before liftoff" feel without delaying the actual physics jump
 # Strategy:
@@ -276,7 +295,19 @@ const MATRIX_DODGE_FRAMES: Array[Rect2] = [
 	Rect2(1824, 321, 231, 408), # 7
 ]
 
-enum AnimState { IDLE, WALK, RUN, ATTACK, EARTHSHATTER, RUN_JUMP, WALK_JUMP, IDLE_JUMP, MATRIX_DODGE, DEFENCE, MONTANTE, HAND_DEFENCE }
+const REST_FRAMES: Array[Rect2] = [
+	Rect2(0, 71, 359, 703),
+	Rect2(359, 313, 530, 461),
+	Rect2(1418, 466, 596, 308),
+	Rect2(2014, 463, 599, 311),
+	Rect2(2613, 473, 593, 301),
+	Rect2(3206, 482, 585, 292), # Index 5: Frame 7
+	Rect2(3791, 463, 571, 311), # Index 6: Frame 8
+	Rect2(4362, 412, 534, 362),
+	Rect2(5585, 0, 394, 774),
+]
+
+enum AnimState { IDLE, WALK, RUN, ATTACK, EARTHSHATTER, RUN_JUMP, WALK_JUMP, IDLE_JUMP, MATRIX_DODGE, DEFENCE, MONTANTE, HAND_DEFENCE, REST }
 
 var tex_idle: Texture2D = null
 var tex_idle_sheet: Texture2D = null
@@ -291,9 +322,12 @@ var tex_matrix_dodge_sheet: Texture2D = null
 var tex_defence_sheet: Texture2D = null
 var tex_montante_sheet: Texture2D = null
 var tex_hand_defence_sheet: Texture2D = null
+var tex_rest_sheet: Texture2D = null
 var anim_timer: float = 0.0
 var anim_frame: int = 0
 var current_anim: AnimState = AnimState.IDLE
+var is_resting: bool = false
+var is_resting_transitioning_out: bool = false
 var was_sprinting_on_jump: bool = false
 var run_jump_face_left: bool = false
 var run_jump_left_ground: bool = false
@@ -338,6 +372,7 @@ func _setup_sprite_animation() -> void:
 	tex_defence_sheet = load(DEFENCE_SHEET_PATH) as Texture2D
 	tex_montante_sheet = load(MONTANTE_SHEET_PATH) as Texture2D
 	tex_hand_defence_sheet = load(HAND_DEFENCE_SHEET_PATH) as Texture2D
+	tex_rest_sheet = load(REST_SHEET_PATH) as Texture2D
 
 	if tex_walk_jump_sheet == null:
 		push_error("CRITICAL: Failed to load walk-jump sheet: " + WALK_JUMP_SHEET_PATH)
@@ -375,7 +410,8 @@ func _ensure_input_mappings() -> void:
 		"interact": [KEY_E],
 		"sprint": [KEY_SHIFT],
 		"defence": [KEY_R],
-		"earthshatter": [KEY_Q]
+		"earthshatter": [KEY_Q],
+		"rest": [KEY_CTRL]
 	}
 	for action in key_mappings:
 		if not InputMap.has_action(action):
@@ -425,6 +461,26 @@ func stop_voice() -> void:
 		sm.stop_voice()
 
 func _unhandled_input(event: InputEvent) -> void:
+	# Handle "rest" toggle first to allow standing up
+	if event.is_action_pressed("rest") and is_on_floor():
+		if is_resting:
+			if not is_resting_transitioning_out:
+				stop_resting()
+			return
+		else:
+			_cancel_active_combat_action()
+			start_resting()
+			return
+
+	# Block ALL other inputs (Attack, Interaction, Dodge, etc.) if resting
+	if is_resting:
+		return
+
+	# Block ALL action inputs if the full map is open
+	var minimap_ctrl = get_tree().root.find_child("MinimapLayer", true, false)
+	if minimap_ctrl and minimap_ctrl.full_map_overlay and minimap_ctrl.full_map_overlay.visible:
+		return
+
 	if event.is_action_pressed("interact"):
 		try_interact()
 	
@@ -494,6 +550,22 @@ func _physics_process(delta: float) -> void:
 	if not is_on_floor():
 		velocity.y -= gravity * delta
 
+	# Block locomotion and combat triggers if resting
+	if is_resting:
+		# Healing: full HP in 10 mins (600 seconds) -> 0.5 HP/s for 300 Max HP
+		if current_health < max_health:
+			var heal_amount := (max_health / 600.0) * delta
+			current_health = min(max_health, current_health + heal_amount)
+			if hud and hud.has_method("update_health"):
+				hud.update_health(current_health, max_health)
+
+		velocity.x = move_toward(velocity.x, 0, acceleration * delta)
+		velocity.z = move_toward(velocity.z, 0, acceleration * delta)
+		_update_sprite_animation(delta)
+		move_and_slide()
+		_clamp_to_world_bounds()
+		return
+
 	if knockback_timer > 0.0:
 		knockback_timer -= delta
 		# A hit cancels sprint/jump carry so depleted stamina cannot preserve
@@ -510,13 +582,20 @@ func _physics_process(delta: float) -> void:
 		return
 
 	# 2. Handle Combat / Attacking & Magic Signs
-	if Input.is_action_just_pressed("attack") and not Input.is_key_pressed(KEY_ALT) and not is_attacking and is_on_floor():
-		if current_stamina >= 15.0:
-			_cancel_active_combat_action()
-			start_attack()
-		else:
-			if hud and hud.has_method("show_notification"):
-				hud.show_notification("Not enough Stamina!", Color(1, 0.4, 0.4, 1))
+	# Guard: do not allow actions if resting or if the map is open
+	var map_open = false
+	var minimap_ctrl = get_tree().root.find_child("MinimapLayer", true, false)
+	if minimap_ctrl and minimap_ctrl.full_map_overlay and minimap_ctrl.full_map_overlay.visible:
+		map_open = true
+
+	if not is_resting and not map_open:
+		if Input.is_action_just_pressed("attack") and not Input.is_key_pressed(KEY_ALT) and not is_attacking and is_on_floor():
+			if current_stamina >= 15.0:
+				_cancel_active_combat_action()
+				start_attack()
+			else:
+				if hud and hud.has_method("show_notification"):
+					hud.show_notification("Not enough Stamina!", Color(1, 0.4, 0.4, 1))
 
 
 	# Montante held-channel: update animation + movement in physics
@@ -871,6 +950,42 @@ func _update_sprite_animation(delta: float) -> void:
 			_finish_hand_defence()
 		return
 
+	# Rest animation sequence: sit down -> loop -> stand up
+	if current_anim == AnimState.REST:
+		_apply_rest_frame(anim_frame)
+
+		anim_timer += delta
+		
+		# Variable FPS logic: 2.0 for the loop, 5.0 for transitions
+		var is_in_loop := not is_resting_transitioning_out and anim_frame >= REST_LOOP_START and anim_frame <= REST_LOOP_END
+		var effective_fps := REST_LOOP_FPS if is_in_loop else REST_FPS
+		
+		var frame_time := 1.0 / effective_fps
+		if anim_timer >= frame_time:
+			var steps := int(anim_timer / frame_time)
+			anim_timer -= steps * frame_time
+			var next_f := anim_frame + steps
+			
+			if is_resting_transitioning_out:
+				# Transitioning out: frames 8-11 (indices 7-10)
+				if anim_frame < 7:
+					anim_frame = 7
+				else:
+					anim_frame = next_f
+				if anim_frame >= REST_FRAME_COUNT:
+					_finish_rest()
+					return
+			else:
+				# Sitting down then looping
+				if anim_frame < REST_LOOP_START:
+					anim_frame = next_f
+				else:
+					# Loop frames 4-7 (indices 3-6)
+					anim_frame = REST_LOOP_START + ((next_f - REST_LOOP_START) % (REST_LOOP_END - REST_LOOP_START + 1))
+			
+			_apply_rest_frame(anim_frame)
+		return
+
 	# Montante: handled in _physics_process, just guard against locomotion override
 	if current_anim == AnimState.MONTANTE:
 		return
@@ -1085,6 +1200,14 @@ func _set_anim_state(state: AnimState, force: bool = false) -> void:
 			sprite.position = Vector3(0.0, (HAND_DEFENCE_FRAME_SIZE.y / 2.0 - 4.0) * HAND_DEFENCE_PIXEL_SIZE, 0.0)
 			sprite.region_enabled = true
 			_apply_hand_defence_frame(0)
+		AnimState.REST:
+			if tex_rest_sheet:
+				sprite.texture = tex_rest_sheet
+			sprite.offset = Vector2.ZERO
+			sprite.centered = true
+			sprite.pixel_size = REST_PIXEL_SIZE
+			sprite.region_enabled = true
+			_apply_rest_frame(0)
 
 
 func _apply_sheet_frame(frame_size: Vector2i, frame_index: int, columns: int = 1) -> void:
@@ -1244,6 +1367,26 @@ func _apply_defence_frame(frame_index: int) -> void:
 	sprite.position = Vector3(0.0, (DEFENCE_FRAME_SIZE.y / 2.0 - 6.0) * DEFENCE_PIXEL_SIZE, 0.0)
 	sprite.region_enabled = true
 	sprite.region_rect = Rect2(frame_index * (DEFENCE_FRAME_SIZE.x + 4), 0, DEFENCE_FRAME_SIZE.x, DEFENCE_FRAME_SIZE.y)
+
+
+func _apply_rest_frame(frame_index: int) -> void:
+	if sprite == null or tex_rest_sheet == null:
+		return
+	frame_index = clampi(frame_index, 0, REST_FRAME_COUNT - 1)
+	var rect: Rect2 = REST_FRAMES[frame_index]
+	if sprite.texture != tex_rest_sheet:
+		sprite.texture = tex_rest_sheet
+	sprite.centered = true
+	sprite.offset = Vector2.ZERO
+	
+	var frame_pixel_size = REST_FRAME_PIXEL_SIZES[frame_index]
+	sprite.pixel_size = frame_pixel_size
+	
+	# Feet positioning: frames are bottom-aligned in the sheet.
+	# The rect.size.y / 2.0 * pixel_size perfectly places the bottom of the rect on the ground.
+	sprite.position = Vector3(0.0, (rect.size.y / 2.0) * frame_pixel_size, 0.0)
+	sprite.region_enabled = true
+	sprite.region_rect = rect
 
 
 func _apply_idle_jump_frame(frame_index: int) -> void:
@@ -1544,10 +1687,34 @@ func _cancel_active_combat_action() -> void:
 	is_montante_attacking = false
 	is_hand_defencing = false
 	is_earthshattering = false
+	is_resting = false
+	is_resting_transitioning_out = false
 	if melee_hitbox:
 		melee_hitbox.monitoring = false
 	anim_timer = 0.0
 	anim_frame = 0
+	_set_anim_state(AnimState.IDLE, true)
+
+func start_resting() -> void:
+	is_resting = true
+	is_resting_transitioning_out = false
+	anim_timer = 0.0
+	anim_frame = 0
+	print("[Player] Rest started!")
+	_set_anim_state(AnimState.REST, true)
+	_apply_rest_frame(0)
+
+func stop_resting() -> void:
+	if not is_resting: return
+	is_resting_transitioning_out = true
+	anim_timer = 0.0
+	anim_frame = 7 # Index 7 is the 8th frame (start of stand up)
+	print("[Player] Rest stopping (transitioning up)...")
+	_apply_rest_frame(7)
+
+func _finish_rest() -> void:
+	is_resting = false
+	is_resting_transitioning_out = false
 	_set_anim_state(AnimState.IDLE, true)
 
 func start_matrix_dodge() -> void:
