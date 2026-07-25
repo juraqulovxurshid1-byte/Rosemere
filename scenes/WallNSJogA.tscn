@@ -1,0 +1,37 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Texture2D" path="res://art_v2/wall_ns_a.png" id="1_a"]
+[ext_resource type="Texture2D" path="res://art_v2/wall_ns_a_n.png" id="1_n"]
+
+[sub_resource type="StandardMaterial3D" id="mat_ns"]
+transparency = 2
+alpha_scissor_threshold = 0.4
+cull_mode = 2
+texture_filter = 5
+albedo_texture = ExtResource("1_a")
+normal_enabled = true
+normal_texture = ExtResource("1_n")
+normal_scale = 1.0
+metallic_specular = 0.25
+
+[sub_resource type="QuadMesh" id="quad_ns"]
+size = Vector2(19.4668, 29.0198)
+
+[sub_resource type="BoxShape3D" id="box_col"]
+size = Vector3(8.176, 9.000, 17.167)
+
+[node name="WallNSJogA" type="Node3D"]
+
+[node name="Visual" type="Node3D" parent="."]
+rotation_degrees = Vector3(-40, 0, 0)
+
+[node name="L1" type="MeshInstance3D" parent="Visual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 14.5099, 0.0)
+mesh = SubResource("quad_ns")
+surface_material_override/0 = SubResource("mat_ns")
+
+[node name="Body" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.500, -8.930)
+shape = SubResource("box_col")
