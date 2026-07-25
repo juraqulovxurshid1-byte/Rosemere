@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=3]
+[gd_scene load_steps=30 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/Player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/DeserterHalberdier.tscn" id="2_halberdier"]
@@ -16,6 +16,10 @@
 [ext_resource type="Texture2D" path="res://art_v2/compass_ornament.png" id="55_compass_ornament"]
 [ext_resource type="Script" path="res://scripts/compass_ticks.gd" id="56_compass_ticks"]
 [ext_resource type="Script" path="res://scripts/compass_rotation.gd" id="57_compass_rotation"]
+[ext_resource type="PackedScene" path="res://scenes/HouseBurgherA.tscn" id="60_house_a"]
+[ext_resource type="PackedScene" path="res://scenes/WallSegmentA.tscn" id="70_wall_a"]
+[ext_resource type="PackedScene" path="res://scenes/WallSegmentB.tscn" id="71_wall_b"]
+[ext_resource type="PackedScene" path="res://scenes/TowerA.tscn" id="72_tower_a"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_world"]
 sky_top_color = Color(0.45, 0.48, 0.55, 1)
@@ -84,7 +88,7 @@ border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.65, 0.2, 0.15, 1)
+border_color = Color(0.522, 0.247, 0.212, 1)
 corner_radius_top_left = 94
 corner_radius_top_right = 94
 corner_radius_bottom_right = 94
@@ -134,6 +138,222 @@ shape = SubResource("BoxShape3D_floor")
 
 [node name="Player" parent="." instance=ExtResource("1_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 5)
+
+[node name="HouseBurgherA" parent="." instance=ExtResource("60_house_a")]
+transform = Transform3D(0.9903, 0, 0, 0, 1, 0, 0, 0, 1, -480, 0, 700)
+
+[node name="HouseBurgherA2" parent="." instance=ExtResource("60_house_a")]
+transform = Transform3D(-0.9488, 0, 0, 0, 1, 0, 0, 0, 1, -390, 0, 770)
+
+[node name="HouseBurgherA3" parent="." instance=ExtResource("60_house_a")]
+transform = Transform3D(0.94, 0, 0, 0, 1, 0, 0, 0, 1, -364, 0, 359)
+
+[node name="HouseBurgherA4" parent="." instance=ExtResource("60_house_a")]
+transform = Transform3D(0.9986, 0, 0, 0, 1, 0, 0, 0, 1, -196, 0, 430)
+
+[node name="HouseBurgherA5" parent="." instance=ExtResource("60_house_a")]
+transform = Transform3D(-0.9897, 0, 0, 0, 1, 0, 0, 0, 1, -30, 0, 395)
+
+[node name="HouseBurgherA6" parent="." instance=ExtResource("60_house_a")]
+transform = Transform3D(0.9746, 0, 0, 0, 1, 0, 0, 0, 1, 126, 0, 183)
+
+[node name="HouseBurgherA7" parent="." instance=ExtResource("60_house_a")]
+transform = Transform3D(1.0439, 0, 0, 0, 1, 0, 0, 0, 1, 369, 0, 271)
+
+[node name="HouseBurgherA8" parent="." instance=ExtResource("60_house_a")]
+transform = Transform3D(-0.9218, 0, 0, 0, 1, 0, 0, 0, 1, 604, 0, 322)
+
+[node name="HouseBurgherA9" parent="." instance=ExtResource("60_house_a")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 792, 0, 148)
+
+[node name="HouseBurgherA10" parent="." instance=ExtResource("60_house_a")]
+transform = Transform3D(-0.9773, 0, 0, 0, 1, 0, 0, 0, 1, 301, 0, 693)
+
+[node name="HouseBurgherA11" parent="." instance=ExtResource("60_house_a")]
+transform = Transform3D(0.9547, 0, 0, 0, 1, 0, 0, 0, 1, 538, 0, 640)
+
+[node name="HouseBurgherA12" parent="." instance=ExtResource("60_house_a")]
+transform = Transform3D(1.0144, 0, 0, 0, 1, 0, 0, 0, 1, 460, 0, -160)
+
+[node name="WallSeg01" parent="." instance=ExtResource("70_wall_a")]
+transform = Transform3D(0.9859, 0, 0, 0, 0.9859, 0, 0, 0, 0.9859, -349.3, 0, 798.0)
+
+[node name="WallSeg02" parent="." instance=ExtResource("71_wall_b")]
+transform = Transform3D(0.9721, 0, 0, 0, 0.9721, 0, 0, 0, 0.9721, -329.5, 0, 814.1)
+
+[node name="WallSeg03" parent="." instance=ExtResource("70_wall_a")]
+transform = Transform3D(-1.0121, 0, 0, 0, 1.0121, 0, 0, 0, 1.0121, -309.7, 0, 830.3)
+
+[node name="WallSeg04" parent="." instance=ExtResource("71_wall_b")]
+transform = Transform3D(0.9658, 0, 0, 0, 0.9658, 0, 0, 0, 0.9658, -290.9, 0, 847.4)
+
+[node name="WallSeg05" parent="." instance=ExtResource("70_wall_a")]
+transform = Transform3D(1.0029, 0, 0, 0, 1.0029, 0, 0, 0, 1.0029, -272.2, 0, 864.8)
+
+[node name="WallSeg06" parent="." instance=ExtResource("71_wall_b")]
+transform = Transform3D(-0.9893, 0, 0, 0, 0.9893, 0, 0, 0, 0.9893, -252.3, 0, 879.4)
+
+[node name="WallSeg07" parent="." instance=ExtResource("70_wall_a")]
+transform = Transform3D(0.9646, 0, 0, 0, 0.9646, 0, 0, 0, 0.9646, -226.9, 0, 881.7)
+
+[node name="WallSeg08" parent="." instance=ExtResource("71_wall_b")]
+transform = Transform3D(1.0006, 0, 0, 0, 1.0006, 0, 0, 0, 1.0006, -201.5, 0, 884.1)
+
+[node name="WallSeg09" parent="." instance=ExtResource("70_wall_a")]
+transform = Transform3D(-0.963, 0, 0, 0, 0.963, 0, 0, 0, 0.963, -176.6, 0, 888.5)
+
+[node name="WallSeg10" parent="." instance=ExtResource("71_wall_b")]
+transform = Transform3D(0.9947, 0, 0, 0, 0.9947, 0, 0, 0, 0.9947, -153.2, 0, 898.6)
+
+[node name="WallSeg11" parent="." instance=ExtResource("70_wall_a")]
+transform = Transform3D(0.9656, 0, 0, 0, 0.9656, 0, 0, 0, 0.9656, -129.8, 0, 908.7)
+
+[node name="WallSeg12" parent="." instance=ExtResource("71_wall_b")]
+transform = Transform3D(-0.9673, 0, 0, 0, 0.9673, 0, 0, 0, 0.9673, -105.0, 0, 914.4)
+
+[node name="WallSeg13" parent="." instance=ExtResource("70_wall_a")]
+transform = Transform3D(0.994, 0, 0, 0, 0.994, 0, 0, 0, 0.994, -80.0, 0, 919.1)
+
+[node name="WallSeg14" parent="." instance=ExtResource("71_wall_b")]
+transform = Transform3D(1.0261, 0, 0, 0, 1.0261, 0, 0, 0, 1.0261, -54.9, 0, 923.7)
+
+[node name="WallSeg15" parent="." instance=ExtResource("70_wall_a")]
+transform = Transform3D(-0.9699, 0, 0, 0, 0.9699, 0, 0, 0, 0.9699, -29.9, 0, 928.5)
+
+[node name="WallSeg16" parent="." instance=ExtResource("71_wall_b")]
+transform = Transform3D(0.9779, 0, 0, 0, 0.9779, 0, 0, 0, 0.9779, -5.2, 0, 935.2)
+
+[node name="WallSeg17" parent="." instance=ExtResource("70_wall_a")]
+transform = Transform3D(1.0102, 0, 0, 0, 1.0102, 0, 0, 0, 1.0102, 19.4, 0, 941.8)
+
+[node name="WallSeg18" parent="." instance=ExtResource("71_wall_b")]
+transform = Transform3D(-1.0358, 0, 0, 0, 1.0358, 0, 0, 0, 1.0358, 44.0, 0, 948.4)
+
+[node name="WallSeg19" parent="." instance=ExtResource("70_wall_a")]
+transform = Transform3D(1.0062, 0, 0, 0, 1.0062, 0, 0, 0, 1.0062, 67.7, 0, 957.7)
+
+[node name="WallSeg20" parent="." instance=ExtResource("71_wall_b")]
+transform = Transform3D(0.9917, 0, 0, 0, 0.9917, 0, 0, 0, 0.9917, 91.3, 0, 967.5)
+
+[node name="WallSeg21" parent="." instance=ExtResource("70_wall_a")]
+transform = Transform3D(-1.0381, 0, 0, 0, 1.0381, 0, 0, 0, 1.0381, 114.8, 0, 977.2)
+
+[node name="WallSeg22" parent="." instance=ExtResource("71_wall_b")]
+transform = Transform3D(0.9637, 0, 0, 0, 0.9637, 0, 0, 0, 0.9637, 138.4, 0, 987.0)
+
+[node name="WallSeg23" parent="." instance=ExtResource("70_wall_a")]
+transform = Transform3D(1.0287, 0, 0, 0, 1.0287, 0, 0, 0, 1.0287, 162.4, 0, 995.6)
+
+[node name="WallSeg24" parent="." instance=ExtResource("71_wall_b")]
+transform = Transform3D(-0.9832, 0, 0, 0, 0.9832, 0, 0, 0, 0.9832, 186.6, 0, 1003.4)
+
+[node name="WallSeg25" parent="." instance=ExtResource("70_wall_a")]
+transform = Transform3D(0.9715, 0, 0, 0, 0.9715, 0, 0, 0, 0.9715, 209.8, 0, 1004.6)
+
+[node name="WallSeg26" parent="." instance=ExtResource("71_wall_b")]
+transform = Transform3D(0.9694, 0, 0, 0, 0.9694, 0, 0, 0, 0.9694, 230.0, 0, 989.1)
+
+[node name="WallSeg27" parent="." instance=ExtResource("70_wall_a")]
+transform = Transform3D(-0.9847, 0, 0, 0, 0.9847, 0, 0, 0, 0.9847, 250.2, 0, 973.5)
+
+[node name="WallSeg28" parent="." instance=ExtResource("71_wall_b")]
+transform = Transform3D(1.0253, 0, 0, 0, 1.0253, 0, 0, 0, 1.0253, 270.5, 0, 958.0)
+
+[node name="WallSeg29" parent="." instance=ExtResource("70_wall_a")]
+transform = Transform3D(0.9745, 0, 0, 0, 0.9745, 0, 0, 0, 0.9745, 292.6, 0, 945.5)
+
+[node name="WallSeg30" parent="." instance=ExtResource("71_wall_b")]
+transform = Transform3D(-1.0065, 0, 0, 0, 1.0065, 0, 0, 0, 1.0065, 315.0, 0, 933.3)
+
+[node name="WallSeg31" parent="." instance=ExtResource("70_wall_a")]
+transform = Transform3D(1.0111, 0, 0, 0, 1.0111, 0, 0, 0, 1.0111, 337.4, 0, 921.1)
+
+[node name="WallSeg32" parent="." instance=ExtResource("71_wall_b")]
+transform = Transform3D(0.9898, 0, 0, 0, 0.9898, 0, 0, 0, 0.9898, 362.9, 0, 921.1)
+
+[node name="WallSeg33" parent="." instance=ExtResource("70_wall_a")]
+transform = Transform3D(-1.0038, 0, 0, 0, 1.0038, 0, 0, 0, 1.0038, 388.4, 0, 921.1)
+
+[node name="WallSeg34" parent="." instance=ExtResource("71_wall_b")]
+transform = Transform3D(0.965, 0, 0, 0, 0.965, 0, 0, 0, 0.965, 413.3, 0, 917.1)
+
+[node name="WallSeg35" parent="." instance=ExtResource("70_wall_a")]
+transform = Transform3D(0.9648, 0, 0, 0, 0.9648, 0, 0, 0, 0.9648, 437.7, 0, 909.6)
+
+[node name="WallSeg36" parent="." instance=ExtResource("71_wall_b")]
+transform = Transform3D(-0.9765, 0, 0, 0, 0.9765, 0, 0, 0, 0.9765, 462.1, 0, 902.1)
+
+[node name="WallSeg37" parent="." instance=ExtResource("70_wall_a")]
+transform = Transform3D(1.0144, 0, 0, 0, 1.0144, 0, 0, 0, 1.0144, 486.4, 0, 894.3)
+
+[node name="WallSeg38" parent="." instance=ExtResource("71_wall_b")]
+transform = Transform3D(0.9942, 0, 0, 0, 0.9942, 0, 0, 0, 0.9942, 573.8, 0, 858.6)
+
+[node name="WallSeg39" parent="." instance=ExtResource("70_wall_a")]
+transform = Transform3D(-0.9851, 0, 0, 0, 0.9851, 0, 0, 0, 0.9851, 585.7, 0, 836.1)
+
+[node name="WallSeg40" parent="." instance=ExtResource("71_wall_b")]
+transform = Transform3D(1.0068, 0, 0, 0, 1.0068, 0, 0, 0, 1.0068, 597.3, 0, 813.4)
+
+[node name="WallSeg41" parent="." instance=ExtResource("70_wall_a")]
+transform = Transform3D(0.9963, 0, 0, 0, 0.9963, 0, 0, 0, 0.9963, 605.7, 0, 789.3)
+
+[node name="WallSeg42" parent="." instance=ExtResource("71_wall_b")]
+transform = Transform3D(-0.984, 0, 0, 0, 0.984, 0, 0, 0, 0.984, 614.1, 0, 765.2)
+
+[node name="WallSeg43" parent="." instance=ExtResource("70_wall_a")]
+transform = Transform3D(1.0236, 0, 0, 0, 1.0236, 0, 0, 0, 1.0236, 622.5, 0, 741.1)
+
+[node name="WallSeg44" parent="." instance=ExtResource("71_wall_b")]
+transform = Transform3D(1.0159, 0, 0, 0, 1.0159, 0, 0, 0, 1.0159, 630.9, 0, 717.1)
+
+[node name="WallSeg45" parent="." instance=ExtResource("70_wall_a")]
+transform = Transform3D(-0.9795, 0, 0, 0, 0.9795, 0, 0, 0, 0.9795, 639.3, 0, 693.0)
+
+[node name="WallSeg46" parent="." instance=ExtResource("71_wall_b")]
+transform = Transform3D(1.006, 0, 0, 0, 1.006, 0, 0, 0, 1.006, 650.8, 0, 671.2)
+
+[node name="WallSeg47" parent="." instance=ExtResource("70_wall_a")]
+transform = Transform3D(1.002, 0, 0, 0, 1.002, 0, 0, 0, 1.002, 671.5, 0, 656.4)
+
+[node name="WallSeg48" parent="." instance=ExtResource("71_wall_b")]
+transform = Transform3D(-1.03, 0, 0, 0, 1.03, 0, 0, 0, 1.03, 692.3, 0, 641.5)
+
+[node name="WallSeg49" parent="." instance=ExtResource("70_wall_a")]
+transform = Transform3D(1.0184, 0, 0, 0, 1.0184, 0, 0, 0, 1.0184, 713.0, 0, 626.7)
+
+[node name="WallSeg50" parent="." instance=ExtResource("71_wall_b")]
+transform = Transform3D(0.983, 0, 0, 0, 0.983, 0, 0, 0, 0.983, 733.7, 0, 611.8)
+
+[node name="WallSeg51" parent="." instance=ExtResource("70_wall_a")]
+transform = Transform3D(-1.0384, 0, 0, 0, 1.0384, 0, 0, 0, 1.0384, 752.0, 0, 594.0)
+
+[node name="WallSeg52" parent="." instance=ExtResource("71_wall_b")]
+transform = Transform3D(0.9694, 0, 0, 0, 0.9694, 0, 0, 0, 0.9694, 770.2, 0, 576.2)
+
+[node name="WallTower01" parent="." instance=ExtResource("72_tower_a")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -319.8, 0, 822.7)
+
+[node name="WallTower02" parent="." instance=ExtResource("72_tower_a")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -182.5, 0, 886.6)
+
+[node name="WallTower03" parent="." instance=ExtResource("72_tower_a")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 149.1, 0, 992.1)
+
+[node name="WallTower04" parent="." instance=ExtResource("72_tower_a")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 337.5, 0, 921.8)
+
+[node name="WallTower05" parent="." instance=ExtResource("72_tower_a")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 521.3, 0, 886.6)
+
+[node name="WallTower06" parent="." instance=ExtResource("72_tower_a")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 554.1, 0, 882.1)
+
+[node name="WallTower07" parent="." instance=ExtResource("72_tower_a")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 655.4, 0, 668.7)
+
+[node name="WallTower08" parent="." instance=ExtResource("72_tower_a")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 777.0, 0, 570.2)
 
 [node name="DeserterHalberdier" parent="." instance=ExtResource("2_halberdier")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
@@ -324,7 +544,7 @@ offset_top = -18.0
 offset_right = 115.0
 offset_bottom = 8.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(0.65, 0.2, 0.15, 1)
+theme_override_colors/font_color = Color(0.522, 0.247, 0.212, 1)
 theme_override_colors/font_outline_color = Color(0.05, 0.04, 0.04, 1)
 theme_override_constants/outline_size = 6
 theme_override_font_sizes/font_size = 24
@@ -339,7 +559,7 @@ offset_top = 192.0
 offset_right = 115.0
 offset_bottom = 218.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(0.65, 0.2, 0.15, 1)
+theme_override_colors/font_color = Color(0.522, 0.247, 0.212, 1)
 theme_override_colors/font_outline_color = Color(0.05, 0.04, 0.04, 1)
 theme_override_constants/outline_size = 6
 theme_override_font_sizes/font_size = 24
@@ -354,7 +574,7 @@ offset_top = 83.0
 offset_right = 223.0
 offset_bottom = 109.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(0.65, 0.2, 0.15, 1)
+theme_override_colors/font_color = Color(0.522, 0.247, 0.212, 1)
 theme_override_colors/font_outline_color = Color(0.05, 0.04, 0.04, 1)
 theme_override_constants/outline_size = 6
 theme_override_font_sizes/font_size = 24
@@ -369,7 +589,7 @@ offset_top = 83.0
 offset_right = 3.0
 offset_bottom = 109.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(0.65, 0.2, 0.15, 1)
+theme_override_colors/font_color = Color(0.522, 0.247, 0.212, 1)
 theme_override_colors/font_outline_color = Color(0.05, 0.04, 0.04, 1)
 theme_override_constants/outline_size = 6
 theme_override_font_sizes/font_size = 24

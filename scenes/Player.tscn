@@ -1,7 +1,9 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scripts/player_controller.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://art_v2/player_knight.png" id="2_knight"]
+[ext_resource type="Script" path="res://scripts/xray_overlay.gd" id="9_xraygd"]
+[ext_resource type="Texture2D" path="res://art_v2/player_knight_normal.png" id="11_knightn"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_player"]
 radius = 0.4
@@ -16,6 +18,42 @@ size = Vector3(1.8, 1.5, 8.125)
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_interact"]
 radius = 4.5
+
+[sub_resource type="StandardMaterial3D" id="mat_xray_ghost"]
+render_priority = -1
+transparency = 1
+no_depth_test = true
+cull_mode = 2
+shading_mode = 0
+texture_filter = 5
+billboard_mode = 2
+albedo_color = Color(0.55, 0.8, 1, 0.55)
+albedo_texture = ExtResource("2_knight")
+stencil_mode = 3
+stencil_flags = 3
+stencil_compare = 5
+metadata/_stencil_owned = true
+
+[sub_resource type="StandardMaterial3D" id="mat_xray_base"]
+render_priority = 1
+next_pass = SubResource("mat_xray_ghost")
+transparency = 2
+alpha_scissor_threshold = 0.4
+cull_mode = 2
+texture_filter = 5
+billboard_mode = 2
+albedo_texture = ExtResource("2_knight")
+normal_enabled = true
+normal_texture = ExtResource("11_knightn")
+rim_enabled = true
+rim = 0.4
+rim_tint = 0.3
+stencil_mode = 2
+stencil_flags = 2
+stencil_color = Color(0.55, 0.8, 1, 1)
+
+[sub_resource type="QuadMesh" id="quad_xray"]
+size = Vector2(5.32, 5.32)
 
 [node name="Player" type="CharacterBody3D"]
 script = ExtResource("1_script")
@@ -61,3 +99,11 @@ monitoring = true
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="InteractArea"]
 shape = SubResource("SphereShape3D_interact")
+
+[node name="XRay" type="Node3D" parent="."]
+script = ExtResource("9_xraygd")
+
+[node name="GhostMesh" type="MeshInstance3D" parent="XRay"]
+cast_shadow = 0
+mesh = SubResource("quad_xray")
+surface_material_override/0 = SubResource("mat_xray_base")

@@ -1,0 +1,58 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Texture2D" path="res://art_v2/wall_segment_b_l1_body.png" id="1_a"]
+[ext_resource type="Texture2D" path="res://art_v2/wall_segment_b_nl1_body.png" id="1_n"]
+[ext_resource type="Texture2D" path="res://art_v2/wall_segment_b_l2_top.png" id="2_a"]
+[ext_resource type="Texture2D" path="res://art_v2/wall_segment_b_nl2_top.png" id="2_n"]
+
+[sub_resource type="StandardMaterial3D" id="mat_l1"]
+transparency = 2
+alpha_scissor_threshold = 0.4
+cull_mode = 2
+texture_filter = 5
+albedo_texture = ExtResource("1_a")
+normal_enabled = true
+normal_texture = ExtResource("1_n")
+normal_scale = 0.9
+metallic_specular = 0.25
+[sub_resource type="StandardMaterial3D" id="mat_l2"]
+transparency = 2
+alpha_scissor_threshold = 0.4
+cull_mode = 2
+texture_filter = 5
+albedo_texture = ExtResource("2_a")
+normal_enabled = true
+normal_texture = ExtResource("2_n")
+normal_scale = 1.1
+metallic_specular = 0.25
+
+[sub_resource type="QuadMesh" id="quad_l1"]
+size = Vector2(28.1916, 8.5116)
+
+[sub_resource type="QuadMesh" id="quad_l2"]
+size = Vector2(28.1916, 4.8216)
+
+
+[sub_resource type="BoxShape3D" id="box_col"]
+size = Vector3(25.936, 8.647, 5.0)
+
+[node name="WallSegmentB" type="Node3D"]
+
+[node name="Visual" type="Node3D" parent="."]
+rotation_degrees = Vector3(-40, 0, 0)
+
+[node name="L1" type="MeshInstance3D" parent="Visual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.2558, 0.0000)
+mesh = SubResource("quad_l1")
+surface_material_override/0 = SubResource("mat_l1")
+
+[node name="L2" type="MeshInstance3D" parent="Visual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9.1184, -0.5000)
+mesh = SubResource("quad_l2")
+surface_material_override/0 = SubResource("mat_l2")
+
+[node name="Body" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.323, -1.0)
+shape = SubResource("box_col")

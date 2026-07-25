@@ -1,0 +1,89 @@
+[gd_scene load_steps=14 format=3]
+
+; ─────────────────────────────────────────────────────────────────────────────
+; HouseBurgherA — pilot "paper 2.5D" building (Cult of the Lamb technique)
+; 3 flat art slices, tilted -40° to face the camera, stacked in depth (accordion).
+; Each slice: QuadMesh + StandardMaterial3D (albedo + generated normal map,
+; alpha-scissor so it writes depth -> correct occlusion/shadows).
+; Art pipeline: docs/kingdom_plan.md §3 — PPU 0.0082, depth step 0.55.
+; Tuning knobs: Visual.rotation_degrees.x (tilt), L2/L3 z offsets (accordion),
+; mat_l*.normal_scale (light raking strength).
+; ─────────────────────────────────────────────────────────────────────────────
+
+[ext_resource type="Texture2D" path="res://art_v2/house_burgher_a_l1_facade.png" id="1_l1"]
+[ext_resource type="Texture2D" path="res://art_v2/house_burgher_a_nl1_facade.png" id="2_n1"]
+[ext_resource type="Texture2D" path="res://art_v2/house_burgher_a_l2_rooflow.png" id="3_l2"]
+[ext_resource type="Texture2D" path="res://art_v2/house_burgher_a_nl2_rooflow.png" id="4_n2"]
+[ext_resource type="Texture2D" path="res://art_v2/house_burgher_a_l3_ridge.png" id="5_l3"]
+[ext_resource type="Texture2D" path="res://art_v2/house_burgher_a_nl3_ridge.png" id="6_n3"]
+
+[sub_resource type="StandardMaterial3D" id="mat_l1"]
+transparency = 2
+alpha_scissor_threshold = 0.4
+cull_mode = 2
+texture_filter = 5
+albedo_texture = ExtResource("1_l1")
+normal_enabled = true
+normal_texture = ExtResource("2_n1")
+normal_scale = 0.9
+metallic_specular = 0.25
+
+[sub_resource type="StandardMaterial3D" id="mat_l2"]
+transparency = 2
+alpha_scissor_threshold = 0.4
+cull_mode = 2
+texture_filter = 5
+albedo_texture = ExtResource("3_l2")
+normal_enabled = true
+normal_texture = ExtResource("4_n2")
+normal_scale = 1.1
+metallic_specular = 0.25
+
+[sub_resource type="StandardMaterial3D" id="mat_l3"]
+transparency = 2
+alpha_scissor_threshold = 0.4
+cull_mode = 2
+texture_filter = 5
+albedo_texture = ExtResource("5_l3")
+normal_enabled = true
+normal_texture = ExtResource("6_n3")
+normal_scale = 1.1
+metallic_specular = 0.25
+
+[sub_resource type="QuadMesh" id="quad_l1"]
+size = Vector2(15.3832, 13.6694)
+
+[sub_resource type="QuadMesh" id="quad_l2"]
+size = Vector2(15.3832, 7.0356)
+
+[sub_resource type="QuadMesh" id="quad_l3"]
+size = Vector2(15.3832, 5.289)
+
+[sub_resource type="BoxShape3D" id="box_col"]
+size = Vector3(12.61, 12.13, 6.0)
+
+[node name="HouseBurgherA" type="Node3D"]
+
+[node name="Visual" type="Node3D" parent="."]
+rotation_degrees = Vector3(-40, 0, 0)
+
+[node name="L1_Facade" type="MeshInstance3D" parent="Visual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.8347, 0)
+mesh = SubResource("quad_l1")
+surface_material_override/0 = SubResource("mat_l1")
+
+[node name="L2_RoofLow" type="MeshInstance3D" parent="Visual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 15.2192, -0.55)
+mesh = SubResource("quad_l2")
+surface_material_override/0 = SubResource("mat_l2")
+
+[node name="L3_RoofRidge" type="MeshInstance3D" parent="Visual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 19.4135, -1.1)
+mesh = SubResource("quad_l3")
+surface_material_override/0 = SubResource("mat_l3")
+
+[node name="Body" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.18, -2.5)
+shape = SubResource("box_col")
